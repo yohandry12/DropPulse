@@ -9,7 +9,7 @@ afterAll(async () => { await prisma.$disconnect(); });
 describe("auth / authorization", () => {
   test("register then login returns tokens", async () => {
     const email = `auth_${Date.now()}@test.com`;
-    const reg = await request(app).post("/auth/register").send({ email, password: "password123" });
+    const reg = await request(app).post("/auth/register").send({ email, password: "password123", name: "Test User" });
     expect(reg.status).toBe(201);
     const login = await request(app).post("/auth/login").send({ email, password: "password123" });
     expect(login.status).toBe(200);
@@ -19,14 +19,14 @@ describe("auth / authorization", () => {
 
   test("duplicate register → 409", async () => {
     const email = `dup_${Date.now()}@test.com`;
-    await request(app).post("/auth/register").send({ email, password: "password123" });
-    const dup = await request(app).post("/auth/register").send({ email, password: "password123" });
+    await request(app).post("/auth/register").send({ email, password: "password123", name: "Test User" });
+    const dup = await request(app).post("/auth/register").send({ email, password: "password123", name: "Test User" });
     expect(dup.status).toBe(409);
   });
 
   test("wrong password → 401", async () => {
     const email = `wp_${Date.now()}@test.com`;
-    await request(app).post("/auth/register").send({ email, password: "password123" });
+    await request(app).post("/auth/register").send({ email, password: "password123", name: "Test User" });
     const login = await request(app).post("/auth/login").send({ email, password: "wrongpass1" });
     expect(login.status).toBe(401);
   });
@@ -34,7 +34,7 @@ describe("auth / authorization", () => {
   test("refresh rotates and revokes the old token", async () => {
     const { token: _t } = await makeUser();
     const email = `rot_${Date.now()}@test.com`;
-    await request(app).post("/auth/register").send({ email, password: "password123" });
+    await request(app).post("/auth/register").send({ email, password: "password123", name: "Test User" });
     const login = await request(app).post("/auth/login").send({ email, password: "password123" });
     const oldRt = login.body.refreshToken;
 
@@ -48,7 +48,7 @@ describe("auth / authorization", () => {
 
   test("logout revokes refresh token", async () => {
     const email = `lo_${Date.now()}@test.com`;
-    await request(app).post("/auth/register").send({ email, password: "password123" });
+    await request(app).post("/auth/register").send({ email, password: "password123", name: "Test User" });
     const login = await request(app).post("/auth/login").send({ email, password: "password123" });
     const rt = login.body.refreshToken;
     await request(app).post("/auth/logout").send({ refreshToken: rt });

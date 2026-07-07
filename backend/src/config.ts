@@ -15,6 +15,19 @@ export const config = {
   cronIntervalSeconds: Number(process.env.CRON_INTERVAL_SECONDS ?? 30),
 };
 
+// Transactional email over SMTP (Gmail app-password in dev). Optional: if
+// SMTP_HOST is unset, the mailer no-ops (logs and skips) so the app still runs
+// without email configured. `from` is the visible sender; `appUrl` builds the
+// links inside emails (the browser-facing frontend origin).
+export const mailConfig = {
+  host: process.env.SMTP_HOST ?? "",
+  port: Number(process.env.SMTP_PORT ?? 587),
+  user: process.env.SMTP_USER ?? "",
+  pass: process.env.SMTP_PASS ?? "",
+  from: process.env.SMTP_FROM ?? "DropPulse <no-reply@droppulse.app>",
+  appUrl: process.env.APP_URL ?? "http://localhost:5173",
+};
+
 // Object storage (MinIO in dev, any S3-compatible in prod). Two endpoints:
 // `endpoint` is where the backend reaches MinIO (the docker-internal host);
 // `publicEndpoint` is baked into presigned URLs the BROWSER hits, so it must be

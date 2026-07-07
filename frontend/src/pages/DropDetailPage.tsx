@@ -4,6 +4,11 @@ import AppHeader from "../components/AppHeader";
 import { useCountdown } from "../hooks/useCountdown";
 import { getDrop, type UpcomingDrop } from "../services/dropsService";
 import { apiErrorCode } from "../services/httpClient";
+import {
+  getDropAlert,
+  subscribeDropAlert,
+  unsubscribeDropAlert,
+} from "../services/notificationService";
 
 // Detail page for a single upcoming drop (/upcoming/:id). Fetches GET
 // /products/:id and shows hero + live countdown to dropAt + stats + alert CTA.
@@ -53,6 +58,35 @@ function CdCell({ value, label, accent }: { value: string; label: string; accent
 function DetailBody({ drop }: { drop: UpcomingDrop }) {
   const navigate = useNavigate();
   const cd = useCountdown(drop.dropAt ? new Date(drop.dropAt).getTime() : Date.now());
+
+  // "M'alerter à l'ouverture" subscription state. null = still loading.
+  const [subscribed, setSubscribed] = useState<boolean | null>(null);
+  const [alertBusy, setAlertBusy] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    getDropAlert(drop.id)
+      .then((s) => alive && setSubscribed(s))
+      .catch(() => alive && setSubscribed(false)); // fetch fail → treat as not subscribed
+    return () => {
+      alive = false;
+    };
+  }, [drop.id]);
+
+  async function toggleAlert() {
+    if (alertBusy || subscribed === null) return;
+    setAlertBusy(true);
+    const next = !subscribed;
+    setSubscribed(next); // optimistic
+    try {
+      if (next) await subscribeDropAlert(drop.id);
+      else await unsubscribeDropAlert(drop.id);
+    } catch {
+      setSubscribed(!next); // revert on failure
+    } finally {
+      setAlertBusy(false);
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col gap-6 px-5 py-6 md:mx-auto md:w-full md:max-w-[1440px] md:grid md:grid-cols-[1fr_560px] md:items-center md:gap-12 md:px-16 md:py-14">
@@ -124,9 +158,18 @@ function DetailBody({ drop }: { drop: UpcomingDrop }) {
           ) : (
             <button
               type="button"
-              className="h-14 rounded-[5px] border-2 border-[#323232] bg-accent font-heading text-[17px] font-extrabold tracking-[0.5px] text-white shadow-[4px_4px_0_#323232] transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none md:h-[60px] md:px-9 md:text-lg"
+              onClick={toggleAlert}
+              disabled={alertBusy || subscribed === null}
+              aria-pressed={subscribed === true}
+              className={`h-14 rounded-[5px] border-2 border-[#323232] font-heading text-[17px] font-extrabold tracking-[0.5px] shadow-[4px_4px_0_#323232] transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-60 md:h-[60px] md:px-9 md:text-lg ${
+                subscribed ? "bg-white text-[#0F172A]" : "bg-accent text-white"
+              }`}
             >
-              M'alerter à l'ouverture
+              {subscribed === null
+                ? "Chargement…"
+                : subscribed
+                ? "✓ Alerte activée"
+                : "M'alerter à l'ouverture"}
             </button>
           )}
         </div>

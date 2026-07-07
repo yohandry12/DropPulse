@@ -36,6 +36,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_hold_minutes: "Durée de réservation invalide.",
   invalid_duration_days: "Durée de vie invalide (jours entiers ≥ 1).",
   invalid_drop_at: "Date d'ouverture invalide.",
+  drop_at_in_past: "La date d'ouverture doit être dans le futur.",
   missing_name: "Le nom est requis.",
   not_published: "Ce drop n'est pas publié.",
   not_scheduled: "Ce drop n'est pas programmé.",
@@ -511,7 +512,7 @@ export default function AdminDropEditPage() {
           <Section n="03" title="Ouverture & réservation" locked={locked("dropAt")}>
             <div className="grid gap-4 sm:grid-cols-2">
               <Field label="Date d'ouverture" locked={locked("dropAt")}>
-                <input className={INPUT} type="date" value={dropDate} onChange={(e) => setDropDate(e.target.value)} disabled={locked("dropAt")} />
+                <input className={INPUT} type="date" min={isoToDateInput(new Date().toISOString())} value={dropDate} onChange={(e) => setDropDate(e.target.value)} disabled={locked("dropAt")} />
               </Field>
               <Field label="Heure d'ouverture" locked={locked("dropAt")}>
                 <input className={INPUT} type="time" value={dropTime} onChange={(e) => setDropTime(e.target.value)} disabled={locked("dropAt")} />

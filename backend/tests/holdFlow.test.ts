@@ -38,10 +38,13 @@ describe("hold / buy flow — business logic & edge cases", () => {
   });
 
   test("one active hold per user", async () => {
-    const ids = await seedUnits(2);
+    // Two units in SEPARATE drops so the per-drop maxPerBuyer cap can't fire —
+    // this isolates the "one active hold per user" invariant from that cap.
+    const [unitA] = await seedUnits(1);
+    const [unitB] = await seedUnits(1);
     const u = await makeUser();
-    await request(app).post(`/units/${ids[0]}/hold`).set(auth(u.token));
-    const second = await request(app).post(`/units/${ids[1]}/hold`).set(auth(u.token));
+    await request(app).post(`/units/${unitA}/hold`).set(auth(u.token));
+    const second = await request(app).post(`/units/${unitB}/hold`).set(auth(u.token));
     expect(second.status).toBe(409);
     expect(second.body.error).toBe("user_already_holding");
   });

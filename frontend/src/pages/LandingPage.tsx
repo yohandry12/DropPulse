@@ -4,6 +4,11 @@ import AppHeader from "../components/AppHeader";
 import { useCountdown } from "../hooks/useCountdown";
 import { getUpcomingDrops, type UpcomingDrop } from "../services/dropsService";
 import { apiErrorCode } from "../services/httpClient";
+import {
+  getDropAlert,
+  subscribeDropAlert,
+  unsubscribeDropAlert,
+} from "../services/notificationService";
 
 // "Landing — drops à venir" screen. Fetches upcoming drops (GET
 // /products/upcoming). The soonest is the hero (big live countdown); the rest
@@ -55,6 +60,36 @@ function CdCell({ value, label, accent }: { value: string; label: string; accent
 function Hero({ drop }: { drop: UpcomingDrop }) {
   const navigate = useNavigate();
   const cd = useCountdown(drop.dropAt ? new Date(drop.dropAt).getTime() : Date.now());
+
+  // "M'alerter à l'ouverture" subscription. null = still loading. Only relevant
+  // while the drop hasn't opened (the alert button is hidden once cd.done).
+  const [subscribed, setSubscribed] = useState<boolean | null>(null);
+  const [alertBusy, setAlertBusy] = useState(false);
+
+  useEffect(() => {
+    let alive = true;
+    getDropAlert(drop.id)
+      .then((s) => alive && setSubscribed(s))
+      .catch(() => alive && setSubscribed(false));
+    return () => {
+      alive = false;
+    };
+  }, [drop.id]);
+
+  async function toggleAlert() {
+    if (alertBusy || subscribed === null) return;
+    setAlertBusy(true);
+    const next = !subscribed;
+    setSubscribed(next); // optimistic
+    try {
+      if (next) await subscribeDropAlert(drop.id);
+      else await unsubscribeDropAlert(drop.id);
+    } catch {
+      setSubscribed(!next); // revert on failure
+    } finally {
+      setAlertBusy(false);
+    }
+  }
 
   return (
     <div className="flex flex-1 flex-col justify-center gap-6 md:grid md:grid-cols-[1fr_560px] md:items-center md:gap-12">
@@ -109,12 +144,27 @@ function Hero({ drop }: { drop: UpcomingDrop }) {
           >
             {cd.done ? "Rejoindre le drop" : "Ouvre bientôt"}
           </button>
-          <button
-            type="button"
-            className="h-12 rounded-[5px] border-2 border-[#475569] bg-transparent text-[15px] font-extrabold text-secondary transition-colors hover:border-[#0F172A] hover:text-[#0F172A] md:h-[60px] md:px-7 md:text-base"
-          >
-            M'alerter à l'ouverture
-          </button>
+          {/* Alert button only while the drop is upcoming. Once cd.done the
+              drop is live — alerting is moot, "Rejoindre" takes over. */}
+          {!cd.done && (
+            <button
+              type="button"
+              onClick={toggleAlert}
+              disabled={alertBusy || subscribed === null}
+              aria-pressed={subscribed === true}
+              className={`h-12 rounded-[5px] border-2 text-[15px] font-extrabold transition-colors disabled:opacity-60 md:h-[60px] md:px-7 md:text-base ${
+                subscribed
+                  ? "border-accent bg-accent text-white"
+                  : "border-[#475569] bg-transparent text-secondary hover:border-[#0F172A] hover:text-[#0F172A]"
+              }`}
+            >
+              {subscribed === null
+                ? "Chargement…"
+                : subscribed
+                ? "✓ Alerte activée"
+                : "M'alerter à l'ouverture"}
+            </button>
+          )}
         </div>
       </div>
     </div>

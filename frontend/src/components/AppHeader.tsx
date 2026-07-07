@@ -3,6 +3,8 @@ import { Link } from "react-router-dom";
 import { useProfile } from "../hooks/useProfile";
 import { initialsFromEmail } from "../services/userService";
 import HoldFab from "./HoldFab";
+import NotificationBell from "./NotificationBell";
+import { getPayoutStatus } from "../services/payoutService";
 
 // Shared top nav for the authenticated drop screens. `active` highlights the
 // current tab (green underline); the others are muted links.
@@ -51,6 +53,20 @@ function ProfileMenu({
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
+  // Payout onboarding state (droppers/admins only). true = account not yet able
+  // to receive money → surfaces an "urgent" badge to nudge setup.
+  const [payoutNeedsSetup, setPayoutNeedsSetup] = useState(false);
+  useEffect(() => {
+    if (!canCreate) return;
+    let alive = true;
+    getPayoutStatus()
+      .then((s) => alive && setPayoutNeedsSetup(!s.chargesEnabled))
+      .catch(() => {}); // silent: badge just stays off on failure
+    return () => {
+      alive = false;
+    };
+  }, [canCreate]);
+
   useEffect(() => {
     if (!open) return;
     function onDown(e: MouseEvent) {
@@ -78,10 +94,13 @@ function ProfileMenu({
         onClick={() => setOpen((v) => !v)}
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label="Menu du profil"
-        className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-white transition-transform hover:scale-105 md:h-[34px] md:w-[34px] md:text-[13px]"
+        aria-label={payoutNeedsSetup ? "Menu du profil (action requise)" : "Menu du profil"}
+        className="relative flex h-8 w-8 items-center justify-center rounded-full bg-primary text-xs font-extrabold text-white transition-transform hover:scale-105 md:h-[34px] md:w-[34px] md:text-[13px]"
       >
         {initials}
+        {payoutNeedsSetup && (
+          <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border-2 border-white bg-destructive" />
+        )}
       </button>
       {open && (
         <div
@@ -105,6 +124,21 @@ function ProfileMenu({
               onClick={() => setOpen(false)}
             >
               Devenir dropper
+            </Link>
+          )}
+          {canCreate && (
+            <Link
+              role="menuitem"
+              to="/settings/payments"
+              className={`${itemClass} flex items-center justify-between`}
+              onClick={() => setOpen(false)}
+            >
+              <span>Paiements</span>
+              {payoutNeedsSetup && (
+                <span className="rounded-[4px] border border-destructive bg-destructive px-1.5 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white">
+                  À configurer
+                </span>
+              )}
             </Link>
           )}
           <Link
@@ -187,6 +221,7 @@ export default function AppHeader({
               <LiveBadge />
             </span>
           )}
+          <NotificationBell />
           <ProfileMenu
             initials={initials}
             canCreate={canCreate}

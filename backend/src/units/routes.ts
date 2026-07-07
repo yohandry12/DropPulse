@@ -1,10 +1,11 @@
 import { Router } from "express";
 import { requireAuth, requireRole, type AuthedRequest } from "../auth/middleware.js";
 import { prisma } from "../prisma.js";
-import { ConflictError, confirmPayment, holdUnit, releaseHold } from "./service.js";
+import { ConflictError, holdUnit, releaseHold } from "./service.js";
 import { InvalidTransitionError } from "./stateMachine.js";
 import { publicUrl } from "../storage/s3.js";
 import { log } from "../logger.js";
+import { fulfillPaidUnit } from "../payments/service.js";
 
 // Build the public image URL for a drop, or null when it has no uploaded image.
 function imageUrlFor(imageKey: string | null): string | null {
@@ -202,6 +203,7 @@ function parseCreateDrop(
     if (typeof b.dropAt !== "string") return { error: "invalid_drop_at" };
     const d = new Date(b.dropAt);
     if (Number.isNaN(d.getTime())) return { error: "invalid_drop_at" };
+    if (d.getTime() <= Date.now()) return { error: "drop_at_in_past" };
     dropAt = d;
   }
 
@@ -578,13 +580,16 @@ unitRouter.post("/:id/release", requireAuth, async (req: AuthedRequest, res) => 
   }
 });
 
+// Simulated payment path (no Stripe): held → sold directly. Kept alongside the
+// Stripe checkout flow — used when payments aren't configured, or for quick
+// dev testing. Both paths funnel through fulfillPaidUnit for identical effects.
 unitRouter.post(
   "/:id/confirm-payment",
   requireAuth,
   async (req: AuthedRequest, res) => {
     try {
-      const unit = await confirmPayment(String(req.params.id), req.user!.sub);
-      res.json({ id: unit.id, status: unit.status, soldAt: unit.soldAt });
+      const result = await fulfillPaidUnit(String(req.params.id), req.user!.sub);
+      res.json(result);
     } catch (e) {
       handleError(e, res);
     }

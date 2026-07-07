@@ -21,7 +21,7 @@ export async function makeUser(): Promise<{ email: string; token: string; id: st
   const email = `u${Date.now()}_${seq++}@test.com`;
   const reg = await request(app)
     .post("/auth/register")
-    .send({ email, password: "password123" });
+    .send({ email, password: "password123", name: "Test User" });
   const login = await request(app)
     .post("/auth/login")
     .send({ email, password: "password123" });

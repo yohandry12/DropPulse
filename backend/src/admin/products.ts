@@ -285,6 +285,7 @@ function parseEditorPatch(
     } else if (typeof b.dropAt === "string") {
       const d = new Date(b.dropAt);
       if (Number.isNaN(d.getTime())) return { error: "invalid_drop_at" };
+      if (d.getTime() <= Date.now()) return { error: "drop_at_in_past" };
       data.dropAt = d;
     } else {
       return { error: "invalid_drop_at" };

@@ -7,6 +7,7 @@ import {
   confirmPayment,
   getMyHold,
   releaseHold,
+  startCheckout,
   type ActiveHold,
 } from "../services/dropService";
 
@@ -82,10 +83,27 @@ function ActiveView({ hold, onExpire }: { hold: ActiveHold; onExpire: () => void
     setBusy(true);
     setError(null);
     try {
-      await confirmPayment(hold.id);
-      navigate("/confirmation", { state: { serialNumber: hold.serialNumber } });
+      // Stripe Checkout: redirect to the hosted payment page. The held→sold flip
+      // is done server-side by the webhook once payment completes.
+      const url = await startCheckout(hold.id);
+      window.location.assign(url);
     } catch (e) {
       const code = apiErrorCode(e);
+      if (code === "payments_not_configured") {
+        // Stripe keys absent (dev): fall back to the simulated confirm so the
+        // flow is still testable end-to-end without a payment provider.
+        try {
+          await confirmPayment(hold.id);
+          navigate("/confirmation", { state: { serialNumber: hold.serialNumber } });
+          return;
+        } catch (e2) {
+          const c2 = apiErrorCode(e2);
+          setError(c2 === "hold_expired" ? "Réservation expirée." : "Le paiement a échoué.");
+          if (c2 === "hold_expired") onExpire();
+          setBusy(false);
+          return;
+        }
+      }
       setError(code === "hold_expired" ? "Réservation expirée." : "Le paiement a échoué.");
       if (code === "hold_expired") onExpire();
       setBusy(false);

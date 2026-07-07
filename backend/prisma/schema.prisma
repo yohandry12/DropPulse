@@ -46,6 +46,27 @@ enum DropperRequestStatus {
   CONSUMED
 }
 
+// In-app notification kind. Drives the icon/label in the bell centre and the
+// email subject. DROP_OPEN: a subscribed upcoming drop just opened. DROP_SOON:
+// reminder before opening. PAYMENT_CONFIRMED: a purchase completed.
+// HOLD_EXPIRING: a held unit is about to be released.
+enum NotificationType {
+  DROP_OPEN
+  DROP_SOON
+  PAYMENT_CONFIRMED
+  HOLD_EXPIRING
+}
+
+// Purchase order lifecycle. PENDING: checkout started, awaiting payment.
+// PAID: payment confirmed (unit flipped to sold). EXPIRED: the hold lapsed
+// before payment — order abandoned. Currently the simulated confirmPayment
+// jumps PENDING→PAID; the Stripe webhook will drive the same transition later.
+enum OrderStatus {
+  PENDING
+  PAID
+  EXPIRED
+}
+
 model User {
   id           String     @id @default(uuid())
   email        String     @unique
@@ -57,10 +78,21 @@ model User {
   status       UserStatus @default(ACTIVE)
   createdAt    DateTime   @default(now()) @map("created_at")
 
+  // Stripe Connect (payouts for droppers). stripeAccountId is the connected
+  // account (acct_...), null until the dropper starts onboarding. We store NO
+  // bank details ourselves — Stripe holds them. stripeChargesEnabled mirrors the
+  // account's charges_enabled flag: true once onboarding is complete and the
+  // dropper can receive money. Refreshed from Stripe on each settings view.
+  stripeAccountId       String?  @map("stripe_account_id")
+  stripeChargesEnabled  Boolean  @default(false) @map("stripe_charges_enabled")
+
   heldUnits      ProductUnit[]    @relation("HeldBy")
   refreshTokens  RefreshToken[]
   createdDrops   Product[]        @relation("CreatedBy")
   dropperRequest DropperRequest?
+  notifications  Notification[]
+  dropAlerts     DropAlert[]
+  orders         Order[]
 
   @@map("users")
 }
@@ -109,6 +141,8 @@ model Product {
 
   units     ProductUnit[]
   createdBy User?         @relation("CreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  alerts    DropAlert[]
+  orders    Order[]
 
   @@index([dropAt])
   @@index([createdById])
@@ -168,4 +202,67 @@ model DropperRequest {
 
   @@index([status])
   @@map("dropper_requests")
+}
+
+// One in-app notification for a user. Shown in the header bell centre; readAt
+// null = unread (drives the badge count). productId links to the drop when the
+// notification is about one (deep-link target); null for account-level notices.
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  body      String
+  productId String?          @map("product_id")
+  readAt    DateTime?        @map("read_at")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Bell query: a user's notifications, newest first, filtered by unread.
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+// "M'alerter à l'ouverture": a user subscribes to an upcoming drop. When dropAt
+// is crossed, the worker notifies every subscriber, then the alert is consumed
+// (notifiedAt set) so it never fires twice. Unique (user, product): one
+// subscription per user per drop.
+model DropAlert {
+  id         String    @id @default(uuid())
+  userId     String    @map("user_id")
+  productId  String    @map("product_id")
+  notifiedAt DateTime? @map("notified_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  // Worker sweep: pending alerts for a product not yet notified.
+  @@index([productId, notifiedAt])
+  @@map("drop_alerts")
+}
+
+// A purchase order. Created PENDING when checkout starts, flipped to PAID once
+// payment confirms (unit → sold). amountCents snapshots the price at purchase
+// time (a later drop edit must not rewrite history). unitId is unique: one
+// order per sold unit. stripeSessionId links to the Stripe Checkout session
+// (null while payment is simulated).
+model Order {
+  id              String      @id @default(uuid())
+  userId          String      @map("user_id")
+  productId       String      @map("product_id")
+  unitId          String      @unique @map("unit_id")
+  amountCents     Int         @map("amount_cents")
+  status          OrderStatus @default(PENDING)
+  stripeSessionId String?     @map("stripe_session_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  paidAt          DateTime?   @map("paid_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("orders")
 }

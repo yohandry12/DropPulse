@@ -10,6 +10,7 @@ import EmptyStatesPage from "./pages/EmptyStatesPage";
 import ProfilePage from "./pages/ProfilePage";
 import DropDetailPage from "./pages/DropDetailPage";
 import CreateDropPage from "./pages/CreateDropPage";
+import PaymentSettingsPage from "./pages/PaymentSettingsPage";
 import BecomeDropperPage from "./pages/BecomeDropperPage";
 import MyDropsPage from "./pages/MyDropsPage";
 import ManageDropPage from "./pages/ManageDropPage";
@@ -129,6 +130,16 @@ export default function App() {
           <RequireAuth>
             <RequireDropper>
               <CreateDropPage />
+            </RequireDropper>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/settings/payments"
+        element={
+          <RequireAuth>
+            <RequireDropper>
+              <PaymentSettingsPage />
             </RequireDropper>
           </RequireAuth>
         }

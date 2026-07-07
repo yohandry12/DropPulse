@@ -27,6 +27,7 @@ const ERROR_MESSAGES: Record<string, string> = {
   invalid_max_per_buyer: "Limite par acheteur invalide.",
   invalid_hold_minutes: "Durée de hold invalide.",
   invalid_drop_at: "Date ou heure d'ouverture invalide.",
+  drop_at_in_past: "La date d'ouverture doit être dans le futur.",
   unsupported_content_type: "Format d'image non supporté (JPG, PNG, WebP).",
   insufficient_role: "Vous n'avez pas les droits pour créer un drop.",
   network_error: "Serveur injoignable. Réessayez.",
@@ -214,6 +215,14 @@ export default function CreateDropPage() {
     return Number.isNaN(d.getTime()) ? null : d.toISOString();
   }, [dateStr, timeStr]);
   const dropAtMs = dropAtIso ? new Date(dropAtIso).getTime() : null;
+
+  // Today (local) as YYYY-MM-DD — floor for the date picker so past days can't
+  // be picked. Backend still rejects any past dropAt (source of truth).
+  const todayStr = useMemo(() => {
+    const n = new Date();
+    const p = (x: number) => String(x).padStart(2, "0");
+    return `${n.getFullYear()}-${p(n.getMonth() + 1)}-${p(n.getDate())}`;
+  }, []);
 
   function messageFor(err: unknown): string {
     return ERROR_MESSAGES[apiErrorCode(err)] ?? "Une erreur est survenue.";
@@ -446,7 +455,7 @@ export default function CreateDropPage() {
               <div className="mb-4 grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div>
                   <label className={LABEL} htmlFor="date">Date d'ouverture</label>
-                  <input id="date" type="date" className={INPUT} value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
+                  <input id="date" type="date" min={todayStr} className={INPUT} value={dateStr} onChange={(e) => setDateStr(e.target.value)} />
                 </div>
                 <div>
                   <label className={LABEL} htmlFor="time">Heure d'ouverture</label>

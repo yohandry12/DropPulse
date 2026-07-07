@@ -71,7 +71,16 @@ export async function releaseHold(unitId: string): Promise<void> {
   await httpClient.post(`/units/${unitId}/release`);
 }
 
-// Confirm payment (held → sold).
+// Confirm payment (held → sold). Simulated path — kept as a fallback when
+// Stripe isn't configured.
 export async function confirmPayment(unitId: string): Promise<void> {
   await httpClient.post(`/units/${unitId}/confirm-payment`);
+}
+
+// Start Stripe Checkout for the held unit. Returns the hosted-page URL the
+// caller redirects the browser to. On success Stripe redirects to /purchases;
+// the held→sold flip happens server-side via the webhook.
+export async function startCheckout(unitId: string): Promise<string> {
+  const res = await httpClient.post<{ url: string }>(`/checkout/${unitId}`);
+  return res.data.url;
 }
