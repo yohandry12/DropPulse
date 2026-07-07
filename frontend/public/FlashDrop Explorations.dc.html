@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@500;600;700;800&amp;family=Nunito+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<style>
+  body{margin:0;background:#ECEDF1;font-family:"Nunito Sans",system-ui,sans-serif}
+  .dv-turn{padding:40px 44px 32px;border-bottom:1px solid rgba(0,0,0,.08);scroll-margin-top:16px}
+  .dv-thd{display:flex;align-items:baseline;gap:10px;margin:0 0 20px}
+  .dv-tid{font:600 10px ui-monospace,Menlo,monospace;padding:3px 7px;background:#1a1a1a;color:#fff;border-radius:4px;text-decoration:none}
+  .dv-tname{font:600 13px/1.2 system-ui,sans-serif;color:#1a1a1a}
+  .dv-opts{display:flex;flex-wrap:wrap;gap:36px;align-items:flex-start}
+  .dv-opt{flex:none;display:flex;flex-direction:column;gap:9px;scroll-margin-top:16px}
+  .dv-oid{font:600 10.5px ui-monospace,Menlo,monospace;padding:3px 7px;background:rgba(0,0,0,.08);color:#1a1a1a;border-radius:5px;text-decoration:none}
+  .dv-olabel{display:flex;align-items:baseline;gap:8px;font:400 11px/1.3 system-ui,sans-serif;color:rgba(0,0,0,.55)}
+  .dv-card{max-width:100%;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.06);overflow:hidden}
+  .dv-opt:target .dv-oid{background:#2a78d6;color:#fff}
+  .dv-next{margin:22px 0 0;font:12px/1.5 system-ui,sans-serif;color:rgba(0,0,0,.5)}
+  @keyframes fdPulse{0%,100%{opacity:1}50%{opacity:.5}}
+  @keyframes fdBlink{0%,100%{opacity:1}50%{opacity:.25}}
+  @media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+
+<section class="dv-turn" id="t1">
+<div class="dv-thd"><a class="dv-tid" href="#t1">1</a><span class="dv-tname">FlashDrop — écrans du drop · simulation live (le stock bouge, les timers tournent) · login recréé dans <a class="dv-oid" href="Login.dc.html">Login.dc.html</a></span></div>
+<div class="dv-opts">
+
+<!-- ============ 1a DROP ACTIF — A LISIBLE (CLAIR) ============ -->
+<div class="dv-opt" id="1a">
+  <div class="dv-olabel"><a class="dv-oid" href="#1a">1a</a>Drop actif — A « Lisible » · fond clair, grille dense, tension maîtrisée</div>
+  <div style="display:flex; gap:20px; align-items:flex-start;">
+
+    <!-- mobile -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#F8FAFC;" data-screen-label="Drop actif A — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; background:#fff; border-bottom:2px solid #E6E8EA;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#0F172A;">FlashDrop</span>
+          <span style="display:flex; align-items:center; gap:5px; border:2px solid #323232; border-radius:5px; padding:2px 7px; background:#fff; box-shadow:2px 2px 0 #323232;">
+            <span style="width:7px; height:7px; border-radius:50%; background:#DC2626; animation:fdBlink 1.2s ease-in-out infinite;"></span>
+            <span style="font-size:10px; font-weight:800; letter-spacing:1px; color:#0F172A;">LIVE</span>
+          </span>
+        </div>
+        <div style="display:flex; align-items:center; gap:12px;">
+          <div style="width:32px; height:32px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">AD</div>
+        </div>
+      </header>
+
+      <div style="flex:1; overflow-y:auto; display:flex; flex-direction:column;">
+        <div style="display:flex; gap:12px; align-items:center; padding:14px 16px 10px;">
+          <div style="flex:none; width:64px; height:64px; border:2px solid #323232; border-radius:5px; background:repeating-linear-gradient(45deg,#E6E8EA 0 8px,#F2F3F4 8px 16px); display:flex; align-items:center; justify-content:center;">
+            <span style="font-family:ui-monospace,Menlo,monospace; font-size:8px; color:#64748B;">photo</span>
+          </div>
+          <div style="min-width:0;">
+            <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#059669;">DROP #07 · EN COURS</div>
+            <div style="font-family:Rubik,sans-serif; font-size:18px; font-weight:700; color:#0F172A; line-height:1.2;">VOLT-01 « Ardoise Émeraude »</div>
+            <div style="font-size:13px; font-weight:700; color:#475569; font-variant-numeric:tabular-nums;">179 € · édition numérotée /100</div>
+          </div>
+        </div>
+
+        <div style="padding:4px 16px 12px;">
+          <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:6px;">
+            <span style="font-size:13px; font-weight:800; color:#0F172A;"><span style="font-family:ui-monospace,Menlo,monospace; color:#059669;">{{ availCount }}</span> disponibles</span>
+            <span style="font-size:12px; font-weight:600; color:#64748B; font-variant-numeric:tabular-nums;">{{ soldCount }} vendues · {{ heldCount }} réservées</span>
+          </div>
+          <div style="height:12px; border:2px solid #323232; border-radius:5px; background:#fff; overflow:hidden;">
+            <div style="height:100%; background:#059669; width:{{ pctLeft }}%; transition:width .6s ease;"></div>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:14px; padding:0 16px 12px;">
+          <span style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#475569;"><span style="width:12px; height:12px; border-radius:3px; background:#fff; border:2px solid #323232; box-sizing:border-box;"></span>Disponible</span>
+          <span style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#475569;"><span style="width:12px; height:12px; border-radius:3px; background:#475569;"></span>Réservée</span>
+          <span style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:700; color:#475569;"><span style="width:12px; height:12px; border-radius:3px; background:#E2E8F0;"></span>Vendue</span>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px; padding:0 16px 16px;">
+          <sc-for list="{{ unitsA }}" as="u" hint-placeholder-count="20">
+            <button type="button" style="height:52px; border-radius:5px; font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; padding:0; background:{{ u.bg }}; border:{{ u.bd }}; box-shadow:{{ u.sh }}; color:{{ u.fg }}; text-decoration:{{ u.td }}; animation:{{ u.anim }};" aria-label="Unité {{ u.label }}">{{ u.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:none; padding:12px 16px 16px; background:#fff; border-top:2px solid #E6E8EA;">
+        <button type="button" style="width:100%; height:56px; border-radius:5px; border:2px solid #323232; background:#059669; color:#fff; font-family:'Nunito Sans',sans-serif; font-size:17px; font-weight:800; box-shadow:4px 4px 0 #323232; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Saisir une unité · 179 €</button>
+        <p style="margin:8px 0 0; text-align:center; font-size:11px; font-weight:600; color:#64748B;">Réservée 10 min pour toi, le temps de payer.</p>
+      </div>
+    </div>
+
+    <!-- desktop -->
+    <div class="dv-card" style="width:1440px; background:#F8FAFC;" data-screen-label="Drop actif A — desktop">
+      <header style="display:flex; align-items:center; justify-content:space-between; height:64px; padding:0 32px; background:#fff; border-bottom:2px solid #E6E8EA;">
+        <div style="display:flex; align-items:center; gap:28px;">
+          <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:20px; color:#0F172A;">FlashDrop</span>
+          <nav style="display:flex; gap:22px;">
+            <a href="#1a" style="font-size:15px; font-weight:800; color:#0F172A; text-decoration:none; border-bottom:3px solid #059669; padding-bottom:2px;">Drop en cours</a>
+            <a href="#1c" style="font-size:15px; font-weight:600; color:#64748B; text-decoration:none;">À venir</a>
+            <a href="#1e" style="font-size:15px; font-weight:600; color:#64748B; text-decoration:none;">Mes achats</a>
+          </nav>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="display:flex; align-items:center; gap:6px; border:2px solid #323232; border-radius:5px; padding:3px 9px; background:#fff; box-shadow:2px 2px 0 #323232;">
+            <span style="width:8px; height:8px; border-radius:50%; background:#DC2626; animation:fdBlink 1.2s ease-in-out infinite;"></span>
+            <span style="font-size:11px; font-weight:800; letter-spacing:1px; color:#0F172A;">LIVE</span>
+          </span>
+          <div style="width:34px; height:34px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;">AD</div>
+        </div>
+      </header>
+
+      <div style="display:grid; grid-template-columns:400px 1fr; gap:32px; padding:28px 32px 32px;">
+        <aside style="display:flex; flex-direction:column; gap:18px;">
+          <div style="height:300px; border:2px solid #323232; border-radius:5px; box-shadow:4px 4px 0 #323232; background:repeating-linear-gradient(45deg,#E6E8EA 0 10px,#F2F3F4 10px 20px); display:flex; align-items:center; justify-content:center;">
+            <span style="font-family:ui-monospace,Menlo,monospace; font-size:12px; color:#64748B;">photo produit — sneaker VOLT-01</span>
+          </div>
+          <div>
+            <div style="font-size:12px; font-weight:800; letter-spacing:2px; color:#059669;">DROP #07 · EN COURS</div>
+            <h1 style="margin:4px 0 6px; font-family:Rubik,sans-serif; font-size:32px; font-weight:800; color:#0F172A; line-height:1.1;">VOLT-01 « Ardoise Émeraude »</h1>
+            <div style="font-size:17px; font-weight:700; color:#475569; font-variant-numeric:tabular-nums;">179 € · 100 unités numérotées, pas une de plus</div>
+          </div>
+          <div>
+            <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:8px;">
+              <span style="font-size:15px; font-weight:800; color:#0F172A;"><span style="font-family:ui-monospace,Menlo,monospace; font-size:20px; color:#059669;">{{ availCount }}</span> disponibles</span>
+              <span style="font-size:13px; font-weight:600; color:#64748B; font-variant-numeric:tabular-nums;">{{ soldCount }} vendues · {{ heldCount }} réservées</span>
+            </div>
+            <div style="height:14px; border:2px solid #323232; border-radius:5px; background:#fff; overflow:hidden;">
+              <div style="height:100%; background:#059669; width:{{ pctLeft }}%; transition:width .6s ease;"></div>
+            </div>
+          </div>
+          <button type="button" style="height:60px; border-radius:5px; border:2px solid #323232; background:#059669; color:#fff; font-family:'Nunito Sans',sans-serif; font-size:18px; font-weight:800; box-shadow:4px 4px 0 #323232; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Saisir une unité · 179 €</button>
+          <p style="margin:-6px 0 0; font-size:12px; font-weight:600; color:#64748B;">Une unité choisie est réservée 10 minutes pour toi. Une seule réservation à la fois.</p>
+          <div style="display:flex; gap:16px;">
+            <span style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#475569;"><span style="width:13px; height:13px; border-radius:3px; background:#fff; border:2px solid #323232; box-sizing:border-box;"></span>Disponible</span>
+            <span style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#475569;"><span style="width:13px; height:13px; border-radius:3px; background:#475569;"></span>Réservée</span>
+            <span style="display:flex; align-items:center; gap:6px; font-size:12px; font-weight:700; color:#475569;"><span style="width:13px; height:13px; border-radius:3px; background:#E2E8F0;"></span>Vendue</span>
+          </div>
+        </aside>
+
+        <div style="display:grid; grid-template-columns:repeat(10,1fr); gap:10px; align-content:start;">
+          <sc-for list="{{ unitsA }}" as="u" hint-placeholder-count="30">
+            <button type="button" style="height:54px; border-radius:5px; font-family:ui-monospace,Menlo,monospace; font-size:14px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; padding:0; background:{{ u.bg }}; border:{{ u.bd }}; box-shadow:{{ u.sh }}; color:{{ u.fg }}; text-decoration:{{ u.td }}; animation:{{ u.anim }};" style-hover="transform:translate(-1px,-1px);" aria-label="Unité {{ u.label }}">{{ u.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 1b DROP ACTIF — B HYPE (SOMBRE) ============ -->
+<div class="dv-opt" id="1b">
+  <div class="dv-olabel"><a class="dv-oid" href="#1b">1b</a>Drop actif — B « Hype » · sombre, compteur géant, copy urgente</div>
+  <div style="display:flex; gap:20px; align-items:flex-start;">
+
+    <!-- mobile -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#0F172A;" data-screen-label="Drop actif B — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; background:#0F172A; border-bottom:2px solid #1E293B;">
+        <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#F8FAFC;">FlashDrop</span>
+        <span style="display:flex; align-items:center; gap:5px; border:2px solid #DC2626; border-radius:5px; padding:2px 7px;">
+          <span style="width:7px; height:7px; border-radius:50%; background:#DC2626; animation:fdBlink 1.2s ease-in-out infinite;"></span>
+          <span style="font-size:10px; font-weight:800; letter-spacing:1px; color:#F8FAFC;">LIVE</span>
+        </span>
+      </header>
+
+      <div style="flex:1; overflow-y:auto;">
+        <div style="padding:18px 16px 6px; text-align:center;">
+          <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#94A3B8;">DROP #07 · VOLT-01 « ARDOISE ÉMERAUDE » · 179 €</div>
+          <div style="font-family:ui-monospace,Menlo,monospace; font-size:104px; font-weight:700; line-height:1; color:#34D399; font-variant-numeric:tabular-nums; margin-top:6px; text-shadow:0 0 32px rgba(5,150,105,.5);">{{ availCount }}</div>
+          <div style="font-family:Rubik,sans-serif; font-size:20px; font-weight:800; color:#F8FAFC; margin-top:2px;">restantes sur 100. Ça part vite.</div>
+          <div style="font-size:12px; font-weight:700; color:#64748B; margin-top:6px; font-variant-numeric:tabular-nums;">{{ heldCount }} paires en cours d'achat en ce moment</div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:6px; padding:14px 16px 16px;">
+          <sc-for list="{{ unitsB }}" as="u" hint-placeholder-count="20">
+            <button type="button" style="height:48px; border-radius:5px; font-family:ui-monospace,Menlo,monospace; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; padding:0; background:{{ u.bg }}; border:{{ u.bd }}; box-shadow:{{ u.sh }}; color:{{ u.fg }}; text-decoration:{{ u.td }}; animation:{{ u.anim }};" aria-label="Unité {{ u.label }}">{{ u.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <div style="flex:none; padding:12px 16px 16px; background:#0F172A; border-top:2px solid #1E293B;">
+        <button type="button" style="width:100%; height:56px; border-radius:5px; border:2px solid #34D399; background:#059669; color:#fff; font-family:Rubik,sans-serif; font-size:17px; font-weight:800; letter-spacing:.5px; box-shadow:4px 4px 0 #022C22; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">SAISIR MA PAIRE · 179 €</button>
+        <p style="margin:8px 0 0; text-align:center; font-size:11px; font-weight:700; color:#64748B;">10 min pour payer une fois la paire saisie. Une seule à la fois.</p>
+      </div>
+    </div>
+
+    <!-- desktop -->
+    <div class="dv-card" style="width:1440px; background:#0F172A;" data-screen-label="Drop actif B — desktop">
+      <header style="display:flex; align-items:center; justify-content:space-between; height:64px; padding:0 32px; border-bottom:2px solid #1E293B;">
+        <div style="display:flex; align-items:center; gap:28px;">
+          <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:20px; color:#F8FAFC;">FlashDrop</span>
+          <nav style="display:flex; gap:22px;">
+            <a href="#1b" style="font-size:15px; font-weight:800; color:#F8FAFC; text-decoration:none; border-bottom:3px solid #34D399; padding-bottom:2px;">Drop en cours</a>
+            <a href="#1c" style="font-size:15px; font-weight:600; color:#64748B; text-decoration:none;">À venir</a>
+            <a href="#1e" style="font-size:15px; font-weight:600; color:#64748B; text-decoration:none;">Mes achats</a>
+          </nav>
+        </div>
+        <div style="display:flex; align-items:center; gap:16px;">
+          <span style="display:flex; align-items:center; gap:6px; border:2px solid #DC2626; border-radius:5px; padding:3px 9px;">
+            <span style="width:8px; height:8px; border-radius:50%; background:#DC2626; animation:fdBlink 1.2s ease-in-out infinite;"></span>
+            <span style="font-size:11px; font-weight:800; letter-spacing:1px; color:#F8FAFC;">LIVE</span>
+          </span>
+          <div style="width:34px; height:34px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;">AD</div>
+        </div>
+      </header>
+
+      <div style="display:grid; grid-template-columns:430px 1fr; gap:36px; padding:30px 32px 36px;">
+        <aside style="display:flex; flex-direction:column; gap:16px;">
+          <div style="font-size:12px; font-weight:800; letter-spacing:2px; color:#94A3B8;">DROP #07 · VOLT-01 « ARDOISE ÉMERAUDE »</div>
+          <div style="display:flex; align-items:baseline; gap:12px;">
+            <span style="font-family:ui-monospace,Menlo,monospace; font-size:150px; font-weight:700; line-height:.95; color:#34D399; font-variant-numeric:tabular-nums; text-shadow:0 0 40px rgba(5,150,105,.5);">{{ availCount }}</span>
+            <span style="font-family:Rubik,sans-serif; font-size:24px; font-weight:800; color:#F8FAFC; line-height:1.15;">restantes<br>sur 100</span>
+          </div>
+          <div style="font-family:Rubik,sans-serif; font-size:26px; font-weight:800; color:#F8FAFC;">Ça part vite. Très vite.</div>
+          <div style="font-size:14px; font-weight:700; color:#64748B; font-variant-numeric:tabular-nums;">{{ soldCount }} déjà vendues · {{ heldCount }} en cours d'achat en ce moment</div>
+          <div style="height:200px; border:2px solid #334155; border-radius:5px; background:repeating-linear-gradient(45deg,#1E293B 0 10px,#16213A 10px 20px); display:flex; align-items:center; justify-content:center;">
+            <span style="font-family:ui-monospace,Menlo,monospace; font-size:12px; color:#64748B;">photo produit — sneaker VOLT-01</span>
+          </div>
+          <button type="button" style="height:64px; border-radius:5px; border:2px solid #34D399; background:#059669; color:#fff; font-family:Rubik,sans-serif; font-size:19px; font-weight:800; letter-spacing:.5px; box-shadow:4px 4px 0 #022C22; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">SAISIR MA PAIRE · 179 €</button>
+          <p style="margin:-4px 0 0; font-size:12px; font-weight:700; color:#64748B;">Ta paire est bloquée 10 minutes, le temps de payer. Une seule réservation à la fois.</p>
+        </aside>
+
+        <div style="display:grid; grid-template-columns:repeat(10,1fr); gap:8px; align-content:start;">
+          <sc-for list="{{ unitsB }}" as="u" hint-placeholder-count="30">
+            <button type="button" style="height:50px; border-radius:5px; font-family:ui-monospace,Menlo,monospace; font-size:13px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; padding:0; background:{{ u.bg }}; border:{{ u.bd }}; box-shadow:{{ u.sh }}; color:{{ u.fg }}; text-decoration:{{ u.td }}; animation:{{ u.anim }};" style-hover="transform:translate(-1px,-1px);" aria-label="Unité {{ u.label }}">{{ u.label }}</button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 1c LANDING — DROP À VENIR ============ -->
+<div class="dv-opt" id="1c">
+  <div class="dv-olabel"><a class="dv-oid" href="#1c">1c</a>Landing — drop à venir · compte à rebours avant ouverture</div>
+  <div style="display:flex; gap:20px; align-items:flex-start;">
+
+    <!-- mobile -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#0F172A;" data-screen-label="Landing — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; border-bottom:2px solid #1E293B;">
+        <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#F8FAFC;">FlashDrop</span>
+        <div style="width:32px; height:32px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">AD</div>
+      </header>
+      <div style="flex:1; display:flex; flex-direction:column; justify-content:center; gap:22px; padding:24px 20px;">
+        <div style="height:230px; border:2px solid #334155; border-radius:5px; background:repeating-linear-gradient(45deg,#1E293B 0 10px,#16213A 10px 20px); display:flex; align-items:center; justify-content:center;">
+          <span style="font-family:ui-monospace,Menlo,monospace; font-size:12px; color:#64748B;">photo produit — sneaker VOLT-01</span>
+        </div>
+        <div>
+          <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#34D399;">PROCHAIN DROP · #07 · VENDREDI 20 H 00</div>
+          <h1 style="margin:6px 0 8px; font-family:Rubik,sans-serif; font-size:34px; font-weight:800; color:#F8FAFC; line-height:1.05;">VOLT-01<br>« Ardoise Émeraude »</h1>
+          <p style="margin:0; font-size:15px; font-weight:700; color:#94A3B8;">100 unités numérotées. Pas une de plus.<br>179 € · premier arrivé, premier servi.</p>
+        </div>
+        <div style="display:flex; gap:10px;">
+          <div style="flex:1; border:2px solid #323232; border-radius:5px; background:#F8FAFC; box-shadow:4px 4px 0 #022C22; text-align:center; padding:10px 0;">
+            <div style="font-family:ui-monospace,Menlo,monospace; font-size:34px; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; line-height:1;">{{ cdH }}</div>
+            <div style="font-size:10px; font-weight:800; letter-spacing:1.5px; color:#64748B; margin-top:4px;">HEURES</div>
+          </div>
+          <div style="flex:1; border:2px solid #323232; border-radius:5px; background:#F8FAFC; box-shadow:4px 4px 0 #022C22; text-align:center; padding:10px 0;">
+            <div style="font-family:ui-monospace,Menlo,monospace; font-size:34px; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; line-height:1;">{{ cdM }}</div>
+            <div style="font-size:10px; font-weight:800; letter-spacing:1.5px; color:#64748B; margin-top:4px;">MINUTES</div>
+          </div>
+          <div style="flex:1; border:2px solid #34D399; border-radius:5px; background:#059669; box-shadow:4px 4px 0 #022C22; text-align:center; padding:10px 0;">
+            <div style="font-family:ui-monospace,Menlo,monospace; font-size:34px; font-weight:700; color:#fff; font-variant-numeric:tabular-nums; line-height:1;">{{ cdS }}</div>
+            <div style="font-size:10px; font-weight:800; letter-spacing:1.5px; color:#D1FAE5; margin-top:4px;">SECONDES</div>
+          </div>
+        </div>
+        <div style="display:flex; flex-direction:column; gap:10px;">
+          <button type="button" style="height:56px; border-radius:5px; border:2px solid #34D399; background:#059669; color:#fff; font-family:Rubik,sans-serif; font-size:17px; font-weight:800; letter-spacing:.5px; box-shadow:4px 4px 0 #022C22; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Rejoindre le drop</button>
+          <button type="button" style="height:48px; border-radius:5px; border:2px solid #475569; background:transparent; color:#94A3B8; font-size:15px; font-weight:800; cursor:pointer;" style-hover="color:#F8FAFC; border-color:#94A3B8;">M'alerter à l'ouverture</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- desktop -->
+    <div class="dv-card" style="width:1440px; background:#0F172A;" data-screen-label="Landing — desktop">
+      <header style="display:flex; align-items:center; justify-content:space-between; height:64px; padding:0 32px; border-bottom:2px solid #1E293B;">
+        <div style="display:flex; align-items:center; gap:28px;">
+          <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:20px; color:#F8FAFC;">FlashDrop</span>
+          <nav style="display:flex; gap:22px;">
+            <a href="#1a" style="font-size:15px; font-weight:600; color:#64748B; text-decoration:none;">Drop en cours</a>
+            <a href="#1c" style="font-size:15px; font-weight:800; color:#F8FAFC; text-decoration:none; border-bottom:3px solid #34D399; padding-bottom:2px;">À venir</a>
+            <a href="#1e" style="font-size:15px; font-weight:600; color:#64748B; text-decoration:none;">Mes achats</a>
+          </nav>
+        </div>
+        <div style="width:34px; height:34px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800;">AD</div>
+      </header>
+      <div style="display:grid; grid-template-columns:1fr 560px; gap:48px; align-items:center; padding:56px 64px 64px;">
+        <div style="display:flex; flex-direction:column; gap:24px;">
+          <div style="font-size:13px; font-weight:800; letter-spacing:2.5px; color:#34D399;">PROCHAIN DROP · #07 · VENDREDI 20 H 00</div>
+          <h1 style="margin:0; font-family:Rubik,sans-serif; font-size:64px; font-weight:800; color:#F8FAFC; line-height:1.02;">VOLT-01<br>« Ardoise Émeraude »</h1>
+          <p style="margin:0; font-size:19px; font-weight:700; color:#94A3B8; line-height:1.5;">100 unités numérotées. Pas une de plus.<br>179 € · premier arrivé, premier servi.</p>
+          <div style="display:flex; gap:12px; max-width:420px;">
+            <div style="flex:1; border:2px solid #323232; border-radius:5px; background:#F8FAFC; box-shadow:4px 4px 0 #022C22; text-align:center; padding:14px 0;">
+              <div style="font-family:ui-monospace,Menlo,monospace; font-size:44px; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; line-height:1;">{{ cdH }}</div>
+              <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#64748B; margin-top:5px;">HEURES</div>
+            </div>
+            <div style="flex:1; border:2px solid #323232; border-radius:5px; background:#F8FAFC; box-shadow:4px 4px 0 #022C22; text-align:center; padding:14px 0;">
+              <div style="font-family:ui-monospace,Menlo,monospace; font-size:44px; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; line-height:1;">{{ cdM }}</div>
+              <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#64748B; margin-top:5px;">MINUTES</div>
+            </div>
+            <div style="flex:1; border:2px solid #34D399; border-radius:5px; background:#059669; box-shadow:4px 4px 0 #022C22; text-align:center; padding:14px 0;">
+              <div style="font-family:ui-monospace,Menlo,monospace; font-size:44px; font-weight:700; color:#fff; font-variant-numeric:tabular-nums; line-height:1;">{{ cdS }}</div>
+              <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#D1FAE5; margin-top:5px;">SECONDES</div>
+            </div>
+          </div>
+          <div style="display:flex; gap:14px;">
+            <button type="button" style="height:60px; padding:0 36px; border-radius:5px; border:2px solid #34D399; background:#059669; color:#fff; font-family:Rubik,sans-serif; font-size:18px; font-weight:800; letter-spacing:.5px; box-shadow:4px 4px 0 #022C22; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Rejoindre le drop</button>
+            <button type="button" style="height:60px; padding:0 28px; border-radius:5px; border:2px solid #475569; background:transparent; color:#94A3B8; font-size:16px; font-weight:800; cursor:pointer;" style-hover="color:#F8FAFC; border-color:#94A3B8;">M'alerter à l'ouverture</button>
+          </div>
+        </div>
+        <div style="height:480px; border:2px solid #334155; border-radius:5px; background:repeating-linear-gradient(45deg,#1E293B 0 12px,#16213A 12px 24px); display:flex; align-items:center; justify-content:center;">
+          <span style="font-family:ui-monospace,Menlo,monospace; font-size:13px; color:#64748B;">photo produit — sneaker VOLT-01 (hero)</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 1d HOLD FLOW ============ -->
+<div class="dv-opt" id="1d">
+  <div class="dv-olabel"><a class="dv-oid" href="#1d">1d</a>Réservation → paiement · hold 10 min qui tourne + états d'erreur</div>
+  <div style="display:flex; gap:20px; align-items:flex-start;">
+
+    <!-- hold actif -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#F8FAFC;" data-screen-label="Hold actif — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; background:#fff; border-bottom:2px solid #E6E8EA;">
+        <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#0F172A;">FlashDrop</span>
+        <div style="width:32px; height:32px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">AD</div>
+      </header>
+      <div style="flex:1; display:flex; flex-direction:column; gap:16px; padding:20px 16px;">
+        <div>
+          <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#059669;">RÉSERVÉE POUR TOI</div>
+          <h2 style="margin:4px 0 0; font-family:Rubik,sans-serif; font-size:26px; font-weight:800; color:#0F172A;">Elle t'attend. Paye avant la fin.</h2>
+        </div>
+
+        <div style="border:2px solid #323232; border-radius:5px; background:#fff; box-shadow:4px 4px 0 #323232; padding:16px; text-align:center;">
+          <div style="font-size:11px; font-weight:800; letter-spacing:1.5px; color:#64748B;">TEMPS RESTANT</div>
+          <div style="font-family:ui-monospace,Menlo,monospace; font-size:64px; font-weight:700; line-height:1.05; font-variant-numeric:tabular-nums; color:{{ holdColor }};">{{ holdM }}:{{ holdS }}</div>
+          <div style="height:10px; border:2px solid #323232; border-radius:5px; background:#F2F3F4; overflow:hidden; margin-top:10px;">
+            <div style="height:100%; background:{{ holdColor }}; width:{{ holdPct }}%; transition:width 1s linear;"></div>
+          </div>
+          <p style="margin:10px 0 0; font-size:12px; font-weight:600; color:#64748B;">Passé ce délai, l'unité repart en vente.</p>
+        </div>
+
+        <div style="border:2px solid #323232; border-radius:5px; background:#fff; box-shadow:4px 4px 0 #323232; padding:16px;">
+          <div style="display:flex; align-items:center; gap:14px; padding-bottom:12px; border-bottom:2px dashed #E6E8EA;">
+            <div style="flex:none; width:56px; height:56px; border:2px solid #323232; border-radius:5px; background:repeating-linear-gradient(45deg,#E6E8EA 0 8px,#F2F3F4 8px 16px);"></div>
+            <div>
+              <div style="font-family:Rubik,sans-serif; font-size:16px; font-weight:700; color:#0F172A;">VOLT-01 « Ardoise Émeraude »</div>
+              <div style="font-size:13px; font-weight:700; color:#475569;">Unité <span style="font-family:ui-monospace,Menlo,monospace; color:#059669;">#042</span><span style="color:#94A3B8;">/100</span></div>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; padding-top:12px; font-size:15px; font-weight:800; color:#0F172A;">
+            <span>Total</span><span style="font-variant-numeric:tabular-nums;">179,00 €</span>
+          </div>
+        </div>
+
+        <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px;">
+          <button type="button" style="height:56px; border-radius:5px; border:2px solid #323232; background:#059669; color:#fff; font-size:17px; font-weight:800; font-family:'Nunito Sans',sans-serif; box-shadow:4px 4px 0 #323232; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Payer 179 € maintenant</button>
+          <button type="button" style="height:44px; border-radius:5px; border:2px solid #E6E8EA; background:transparent; color:#64748B; font-size:14px; font-weight:800; cursor:pointer;" style-hover="border-color:#94A3B8; color:#334155;">Libérer l'unité</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- hold expiré -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#F8FAFC;" data-screen-label="Hold expiré — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; background:#fff; border-bottom:2px solid #E6E8EA;">
+        <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#0F172A;">FlashDrop</span>
+        <div style="width:32px; height:32px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">AD</div>
+      </header>
+      <div style="flex:1; display:flex; flex-direction:column; gap:16px; padding:20px 16px;">
+        <div style="border:2px solid #DC2626; border-radius:5px; background:#fff; box-shadow:4px 4px 0 #DC2626; padding:20px 16px; text-align:center;">
+          <div style="font-family:ui-monospace,Menlo,monospace; font-size:56px; font-weight:700; color:#DC2626; line-height:1;">00:00</div>
+          <h2 style="margin:10px 0 4px; font-family:Rubik,sans-serif; font-size:24px; font-weight:800; color:#0F172A;">Réservation expirée.</h2>
+          <p style="margin:0; font-size:14px; font-weight:600; color:#475569;">L'unité <span style="font-family:ui-monospace,Menlo,monospace; font-weight:700;">#042</span> est repartie en vente. Personne ne l'a encore prise — fonce.</p>
+        </div>
+        <div style="border:2px solid #E6E8EA; border-radius:5px; background:#fff; padding:16px; opacity:.6;">
+          <div style="display:flex; align-items:center; gap:14px;">
+            <div style="flex:none; width:56px; height:56px; border:2px solid #94A3B8; border-radius:5px; background:repeating-linear-gradient(45deg,#E6E8EA 0 8px,#F2F3F4 8px 16px);"></div>
+            <div>
+              <div style="font-family:Rubik,sans-serif; font-size:16px; font-weight:700; color:#64748B; text-decoration:line-through;">VOLT-01 « Ardoise Émeraude »</div>
+              <div style="font-size:13px; font-weight:700; color:#94A3B8;">Unité <span style="font-family:ui-monospace,Menlo,monospace;">#042</span>/100 — plus à toi</div>
+            </div>
+          </div>
+        </div>
+        <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px;">
+          <button type="button" style="height:56px; border-radius:5px; border:2px solid #323232; background:#059669; color:#fff; font-size:17px; font-weight:800; font-family:'Nunito Sans',sans-serif; box-shadow:4px 4px 0 #323232; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Retourner au drop · {{ availCount }} dispo</button>
+          <p style="margin:0; text-align:center; font-size:11px; font-weight:600; color:#64748B;">Astuce : garde ta carte prête avant de saisir une unité.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- unité déjà partie -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#F8FAFC;" data-screen-label="Unité déjà vendue — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; background:#fff; border-bottom:2px solid #E6E8EA;">
+        <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#0F172A;">FlashDrop</span>
+        <div style="width:32px; height:32px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">AD</div>
+      </header>
+      <div style="flex:1; display:flex; flex-direction:column; gap:16px; padding:20px 16px;">
+        <div style="border:2px solid #323232; border-radius:5px; background:#fff; box-shadow:4px 4px 0 #323232; padding:20px 16px; text-align:center;">
+          <div style="display:inline-block; font-family:ui-monospace,Menlo,monospace; font-size:40px; font-weight:700; color:#94A3B8; text-decoration:line-through; line-height:1;">#017</div>
+          <h2 style="margin:10px 0 4px; font-family:Rubik,sans-serif; font-size:24px; font-weight:800; color:#0F172A;">Trop tard, elle est partie.</h2>
+          <p style="margin:0; font-size:14px; font-weight:600; color:#475569;">Quelqu'un a été plus rapide sur la <span style="font-family:ui-monospace,Menlo,monospace; font-weight:700;">#017</span>. Il en reste <span style="font-family:ui-monospace,Menlo,monospace; font-weight:700; color:#059669;">{{ availCount }}</span>.</p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(5,1fr); gap:8px;">
+          <sc-for list="{{ unitsMini }}" as="u" hint-placeholder-count="10">
+            <button type="button" style="height:48px; border-radius:5px; font-family:ui-monospace,Menlo,monospace; font-size:12px; font-weight:700; font-variant-numeric:tabular-nums; cursor:pointer; padding:0; background:{{ u.bg }}; border:{{ u.bd }}; box-shadow:{{ u.sh }}; color:{{ u.fg }}; text-decoration:{{ u.td }}; animation:{{ u.anim }};" aria-label="Unité {{ u.label }}">{{ u.label }}</button>
+          </sc-for>
+        </div>
+        <p style="margin:0; text-align:center; font-size:12px; font-weight:700; color:#64748B;">Les plus proches encore disponibles ↑</p>
+        <div style="margin-top:auto;">
+          <button type="button" style="width:100%; height:56px; border-radius:5px; border:2px solid #323232; background:#059669; color:#fff; font-size:17px; font-weight:800; font-family:'Nunito Sans',sans-serif; box-shadow:4px 4px 0 #323232; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Choisir une autre unité</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 1e CONFIRMATION ============ -->
+<div class="dv-opt" id="1e">
+  <div class="dv-olabel"><a class="dv-oid" href="#1e">1e</a>Confirmation d'achat · ton de célébration, numéro de série héros</div>
+  <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#059669;" data-screen-label="Confirmation — mobile">
+    <header style="flex:none; display:flex; align-items:center; justify-content:center; height:56px;">
+      <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#fff;">FlashDrop</span>
+    </header>
+    <div style="flex:1; display:flex; flex-direction:column; gap:18px; padding:14px 20px 24px;">
+      <div style="text-align:center; color:#fff;">
+        <div style="display:inline-flex; align-items:center; justify-content:center; width:56px; height:56px; border-radius:50%; border:3px solid #fff; margin-bottom:12px;">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+        <h2 style="margin:0; font-family:Rubik,sans-serif; font-size:34px; font-weight:800; line-height:1.05;">Elle est à toi.</h2>
+        <p style="margin:8px 0 0; font-size:14px; font-weight:700; color:#D1FAE5;">Payée, numérotée, réservée à ton nom.</p>
+      </div>
+
+      <div style="border:2px solid #323232; border-radius:5px; background:#F8FAFC; box-shadow:4px 4px 0 #022C22; overflow:hidden;">
+        <div style="padding:18px 18px 14px; text-align:center;">
+          <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#64748B;">TON NUMÉRO DE SÉRIE</div>
+          <div style="font-family:ui-monospace,Menlo,monospace; font-variant-numeric:tabular-nums; font-size:72px; font-weight:700; color:#0F172A; line-height:1;">#042<span style="font-size:28px; color:#94A3B8;">/100</span></div>
+        </div>
+        <div style="border-top:2px dashed #CBD5E1; padding:14px 18px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#64748B;">Modèle</span><span style="color:#0F172A;">VOLT-01 « Ardoise Émeraude »</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#64748B;">Drop</span><span style="color:#0F172A;">#07 · 3 juillet 2026</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#64748B;">Payé</span><span style="color:#0F172A; font-variant-numeric:tabular-nums;">179,00 €</span></div>
+          <div style="display:flex; justify-content:space-between; font-size:13px; font-weight:700;"><span style="color:#64748B;">Commande</span><span style="color:#0F172A; font-family:ui-monospace,Menlo,monospace;">FD-07-0042</span></div>
+        </div>
+      </div>
+
+      <p style="margin:0; text-align:center; font-size:12px; font-weight:700; color:#D1FAE5;">Tu fais partie des 100. Confirmation envoyée par e-mail.</p>
+
+      <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px;">
+        <button type="button" style="height:56px; border-radius:5px; border:2px solid #323232; background:#F8FAFC; color:#0F172A; font-size:17px; font-weight:800; font-family:'Nunito Sans',sans-serif; box-shadow:4px 4px 0 #022C22; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Voir mes achats</button>
+        <button type="button" style="height:44px; border-radius:5px; border:2px solid rgba(255,255,255,.5); background:transparent; color:#fff; font-size:14px; font-weight:800; cursor:pointer;" style-hover="border-color:#fff;">Retour aux drops</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 1f ÉTATS VIDES ============ -->
+<div class="dv-opt" id="1f">
+  <div class="dv-olabel"><a class="dv-oid" href="#1f">1f</a>États vides / échec · drop terminé + aucun drop en cours</div>
+  <div style="display:flex; gap:20px; align-items:flex-start;">
+
+    <!-- sold out -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#F8FAFC;" data-screen-label="Drop terminé — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; background:#fff; border-bottom:2px solid #E6E8EA;">
+        <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#0F172A;">FlashDrop</span>
+        <div style="width:32px; height:32px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">AD</div>
+      </header>
+      <div style="flex:1; display:flex; flex-direction:column; gap:18px; padding:24px 20px;">
+        <div style="text-align:center;">
+          <div style="display:inline-block; border:2px solid #323232; border-radius:5px; background:#0F172A; color:#F8FAFC; box-shadow:4px 4px 0 #323232; padding:6px 14px; font-family:Rubik,sans-serif; font-size:14px; font-weight:800; letter-spacing:2px;">SOLD OUT</div>
+          <h2 style="margin:16px 0 6px; font-family:Rubik,sans-serif; font-size:32px; font-weight:800; color:#0F172A; line-height:1.05;">Tout est parti.</h2>
+          <p style="margin:0; font-size:14px; font-weight:700; color:#475569;"><span style="font-family:ui-monospace,Menlo,monospace;">100/100</span> vendues en <span style="font-family:ui-monospace,Menlo,monospace;">7 min 42 s</span>.</p>
+        </div>
+        <div style="display:grid; grid-template-columns:repeat(10,1fr); gap:4px; padding:14px; border:2px solid #E6E8EA; border-radius:5px; background:#fff;">
+          <sc-for list="{{ unitsSoldOut }}" as="u" hint-placeholder-count="30">
+            <div style="height:16px; border-radius:3px; background:#E2E8F0;"></div>
+          </sc-for>
+        </div>
+        <div style="border:2px solid #323232; border-radius:5px; background:#fff; box-shadow:4px 4px 0 #323232; padding:16px; text-align:center;">
+          <div style="font-size:11px; font-weight:800; letter-spacing:2px; color:#059669;">PROCHAIN DROP · #08</div>
+          <div style="font-family:ui-monospace,Menlo,monospace; font-size:34px; font-weight:700; color:#0F172A; font-variant-numeric:tabular-nums; margin-top:4px;">{{ ndH }} h {{ ndM }} min</div>
+          <p style="margin:6px 0 0; font-size:12px; font-weight:700; color:#64748B;">Même heure, autre paire. Sois prêt.</p>
+        </div>
+        <div style="margin-top:auto; display:flex; flex-direction:column; gap:10px;">
+          <button type="button" style="height:56px; border-radius:5px; border:2px solid #323232; background:#059669; color:#fff; font-size:17px; font-weight:800; font-family:'Nunito Sans',sans-serif; box-shadow:4px 4px 0 #323232; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">M'alerter pour le drop #08</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- aucun drop -->
+    <div class="dv-card" style="width:375px; height:812px; display:flex; flex-direction:column; background:#F8FAFC;" data-screen-label="Aucun drop — mobile">
+      <header style="flex:none; display:flex; align-items:center; justify-content:space-between; height:56px; padding:0 16px; background:#fff; border-bottom:2px solid #E6E8EA;">
+        <span style="font-family:Rubik,sans-serif; font-weight:800; font-size:18px; color:#0F172A;">FlashDrop</span>
+        <div style="width:32px; height:32px; border-radius:50%; background:#334155; color:#fff; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:800;">AD</div>
+      </header>
+      <div style="flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:24px 32px; text-align:center;">
+        <div style="width:72px; height:72px; border:2px solid #323232; border-radius:5px; background:#fff; box-shadow:4px 4px 0 #323232; display:flex; align-items:center; justify-content:center;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><polyline points="12 7 12 12 15 14"></polyline></svg>
+        </div>
+        <h2 style="margin:0; font-family:Rubik,sans-serif; font-size:28px; font-weight:800; color:#0F172A;">Aucun drop en cours.</h2>
+        <p style="margin:0; font-size:14px; font-weight:700; color:#475569;">Le prochain ouvre dans <span style="font-family:ui-monospace,Menlo,monospace; color:#059669;">{{ ndH }} h {{ ndM }} min</span>. C'est le moment de préparer ta carte.</p>
+        <button type="button" style="height:48px; padding:0 24px; border-radius:5px; border:2px solid #323232; background:#fff; color:#0F172A; font-size:15px; font-weight:800; font-family:'Nunito Sans',sans-serif; box-shadow:4px 4px 0 #323232; cursor:pointer;" style-active="transform:translate(3px,3px); box-shadow:none;">Voir le drop à venir</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<p class="dv-next">À essayer : « garde <a class="dv-oid" href="#1a">1a</a> mais avec le compteur géant de <a class="dv-oid" href="#1b">1b</a> » · « rends la grille de <a class="dv-oid" href="#1b">1b</a> plus dense » · « prototype cliquable de bout en bout »</p>
+</section>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;simulate&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Simulation&quot;},&quot;startAvailable&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;default&quot;:10,&quot;min&quot;:8,&quot;max&quot;:90,&quot;step&quot;:1,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Simulation&quot;}}">
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const targetAvail = props.startAvailable ?? 32;
+    // Deterministic scatter (LCG) so the grid looks the same on every load.
+    let seed = 42;
+    const rnd = () => ((seed = (seed * 1664525 + 1013904223) >>> 0), seed / 4294967296);
+    const statuses = new Array(100).fill("s");
+    const order = Array.from({ length: 100 }, (_, i) => i).sort(() => rnd() - 0.5);
+    for (let i = 0; i < targetAvail; i++) statuses[order[i]] = "a";
+    for (let i = targetAvail; i < targetAvail + 6 && i < 100; i++) statuses[order[i]] = "h";
+    this.state = {
+      statuses,
+      holdSeconds: 9 * 60 + 47,
+      dropTarget: Date.now() + (2 * 3600 + 13 * 60 + 42) * 1000,
+      nextDrop: Date.now() + (26 * 3600 + 4 * 60) * 1000,
+      tick: 0,
+    };
+  }
+
+  componentDidMount() {
+    this._iv = setInterval(() => this.step(), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this._iv);
+  }
+
+  step() {
+    this.setState((s) => {
+      const next = { tick: s.tick + 1, holdSeconds: s.holdSeconds <= 0 ? 9 * 60 + 59 : s.holdSeconds - 1 };
+      if ((this.props.simulate ?? true) && s.tick % 3 === 0) {
+        const st = s.statuses.slice();
+        const idxOf = (v) => st.map((x, i) => (x === v ? i : -1)).filter((i) => i >= 0);
+        const avail = idxOf("a");
+        const held = idxOf("h");
+        // held -> sold (mostly) or back to available
+        if (held.length && Math.random() < 0.75) {
+          const i = held[Math.floor(Math.random() * held.length)];
+          st[i] = Math.random() < 0.8 ? "s" : "a";
+        }
+        // available -> held, but keep the demo grid alive
+        if (avail.length > 14 && held.length < 9 && Math.random() < 0.8) {
+          const i = avail[Math.floor(Math.random() * avail.length)];
+          st[i] = "h";
+        }
+        next.statuses = st;
+      }
+      return next;
+    });
+  }
+
+  renderVals() {
+    const { statuses, holdSeconds, dropTarget, nextDrop } = this.state;
+    const pad2 = (n) => String(n).padStart(2, "0");
+    const pad3 = (n) => String(n).padStart(3, "0");
+
+    const paletteA = {
+      a: { bg: "#FFFFFF", bd: "2px solid #323232", sh: "2px 2px 0 #323232", fg: "#059669", td: "none", anim: "none" },
+      h: { bg: "#475569", bd: "2px solid #475569", sh: "none", fg: "#F8FAFC", td: "none", anim: "fdPulse 1.6s ease-in-out infinite" },
+      s: { bg: "#F2F3F4", bd: "2px solid #F2F3F4", sh: "none", fg: "#94A3B8", td: "line-through", anim: "none" },
+    };
+    const paletteB = {
+      a: { bg: "#059669", bd: "2px solid #34D399", sh: "0 0 10px rgba(5,150,105,.45)", fg: "#FFFFFF", td: "none", anim: "none" },
+      h: { bg: "#0F172A", bd: "2px dashed #64748B", sh: "none", fg: "#94A3B8", td: "none", anim: "fdPulse 1.6s ease-in-out infinite" },
+      s: { bg: "#1E293B", bd: "2px solid #1E293B", sh: "none", fg: "#475569", td: "line-through", anim: "none" },
+    };
+    const mk = (pal) => statuses.map((st, i) => ({ label: "#" + pad3(i + 1), ...pal[st] }));
+
+    const unitsA = mk(paletteA);
+    const unitsB = mk(paletteB);
+    const availCount = statuses.filter((s) => s === "a").length;
+    const heldCount = statuses.filter((s) => s === "h").length;
+    const soldCount = 100 - availCount - heldCount;
+
+    // 10 tiles around #017 for the "unité partie" screen
+    const unitsMini = unitsA.slice(12, 22);
+
+    const holdM = pad2(Math.floor(holdSeconds / 60));
+    const holdS = pad2(holdSeconds % 60);
+    const holdPct = Math.round((holdSeconds / 600) * 100);
+    const holdColor = holdSeconds < 60 ? "#DC2626" : "#059669";
+
+    const cdLeft = Math.max(0, Math.floor((dropTarget - Date.now()) / 1000));
+    const ndLeft = Math.max(0, Math.floor((nextDrop - Date.now()) / 1000));
+
+    return {
+      unitsA,
+      unitsB,
+      unitsMini,
+      unitsSoldOut: new Array(100).fill(0),
+      availCount,
+      heldCount,
+      soldCount,
+      pctLeft: availCount,
+      holdM,
+      holdS,
+      holdPct,
+      holdColor,
+      cdH: pad2(Math.floor(cdLeft / 3600)),
+      cdM: pad2(Math.floor((cdLeft % 3600) / 60)),
+      cdS: pad2(cdLeft % 60),
+      ndH: pad2(Math.floor(ndLeft / 3600)),
+      ndM: pad2(Math.floor((ndLeft % 3600) / 60)),
+    };
+  }
+}
+</script>
+</body>
+</html>

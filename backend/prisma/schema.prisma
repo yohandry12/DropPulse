@@ -1,0 +1,171 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UnitStatus {
+  available
+  held
+  sold
+}
+
+// Capability tier. Additive, not exclusive: DROPPER can still buy, ADMIN can
+// still create+buy. Default CHASER = plain buyer. Role lives in DB (not JWT) so
+// upgrades take effect immediately without waiting for token expiry.
+enum Role {
+  CHASER
+  DROPPER
+  ADMIN
+}
+
+// A disabled account cannot log in. Admins toggle this.
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+// Authored lifecycle of a drop. Only these two are stored: the creator sets
+// them. LIVE (dropAt passed) and SOLD_OUT (no available units) are DERIVED at
+// read time from dropAt + unit counts — never stored — same pattern as the
+// upcoming/live split already used for dropAt.
+enum DropStatus {
+  DRAFT
+  SCHEDULED
+}
+
+// Upgrade request: a Chaser asks to become a Dropper. Linear lifecycle:
+// PENDING (submitted) → APPROVED (admin issued a code) → CONSUMED (requester
+// entered the code, role flipped to DROPPER). No reject path in V1.
+enum DropperRequestStatus {
+  PENDING
+  APPROVED
+  CONSUMED
+}
+
+model User {
+  id           String     @id @default(uuid())
+  email        String     @unique
+  // Display name collected at sign-up. Nullable: users created before this
+  // column have none — the app falls back to a name derived from the email.
+  name         String?
+  passwordHash String     @map("password_hash")
+  role         Role       @default(CHASER)
+  status       UserStatus @default(ACTIVE)
+  createdAt    DateTime   @default(now()) @map("created_at")
+
+  heldUnits      ProductUnit[]    @relation("HeldBy")
+  refreshTokens  RefreshToken[]
+  createdDrops   Product[]        @relation("CreatedBy")
+  dropperRequest DropperRequest?
+
+  @@map("users")
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  name        String
+  description String?
+  // Colorway / edition label (form section 01). Optional.
+  edition     String?
+  price       Int // cents
+  // Max units one buyer may hold/purchase for this drop. Enforced at hold time
+  // (wired in a later phase); stored here so each drop carries its own cap.
+  maxPerBuyer Int        @default(1) @map("max_per_buyer")
+  // Minutes a hold survives before the unit is released. Per-drop; replaces the
+  // global HOLD_TTL_MINUTES env for drops created via the form. Existing rows
+  // backfilled to 10 (the old env default).
+  holdMinutes Int        @default(10) @map("hold_minutes")
+  // MinIO object key for the product image. Null until Phase 3 wires upload.
+  imageKey    String?    @map("image_key")
+  // Authored state only (DRAFT | SCHEDULED). LIVE / SOLD_OUT derived at read.
+  status      DropStatus @default(DRAFT)
+  // Owner of the drop. Nullable: legacy seeded drops have no creator (Admins see
+  // all drops regardless). New drops always set this.
+  createdById String?    @map("created_by_id")
+  // When the drop opens. Null = no scheduled date. A drop is "upcoming" while
+  // dropAt is in the future; status is derived from this, not stored.
+  dropAt      DateTime?  @map("drop_at")
+  // Lifetime in days after opening. Null = lives indefinitely (legacy default).
+  // When set, the worker auto-pauses the drop once dropAt + durationDays has
+  // passed AND stock remains — freeing the live slot. The creator can then
+  // reactivate + edit it. Reuses pausedAt (no new state).
+  durationDays Int?      @map("duration_days")
+  // Soft-delete timestamp. Null = active. Admins archive a drop instead of hard
+  // deleting so sold-unit history survives; archived drops vanish from all public
+  // listings (upcoming/live/detail) but stay in the admin table and the owner's
+  // "Mes drops". Archiving is refused when any unit is already sold.
+  archivedAt  DateTime?  @map("archived_at")
+  // Pause timestamp. Null = not paused. Orthogonal to the stored DropStatus and
+  // to archivedAt: a LIVE drop (SCHEDULED + dropAt passed, with sales) can be
+  // paused to hide it from the public WITHOUT losing its sales — reversible via
+  // resume. Paused drops vanish from public listings and refuse new holds, like
+  // archived, but stay fully editable in the admin editor.
+  pausedAt    DateTime?  @map("paused_at")
+  createdAt   DateTime   @default(now()) @map("created_at")
+
+  units     ProductUnit[]
+  createdBy User?         @relation("CreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+
+  @@index([dropAt])
+  @@index([createdById])
+  @@map("products")
+}
+
+model ProductUnit {
+  id           String     @id @default(uuid())
+  productId    String     @map("product_id")
+  serialNumber String     @unique @map("serial_number")
+  status       UnitStatus @default(available)
+  heldByUserId String?    @map("held_by_user_id")
+  heldAt       DateTime?  @map("held_at")
+  expiresAt    DateTime?  @map("expires_at")
+  soldAt       DateTime?  @map("sold_at")
+
+  product  Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  heldBy   User?   @relation("HeldBy", fields: [heldByUserId], references: [id], onDelete: SetNull)
+
+  // Enforce "one active hold per user" at DB level: only one row per user
+  // may be in `held` state at a time (partial unique via app + this index aids lookups).
+  @@index([heldByUserId])
+  @@index([status])
+  @@map("product_units")
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String    @map("user_id")
+  tokenHash String    @unique @map("token_hash")
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model DropperRequest {
+  id          String               @id @default(uuid())
+  // One open request per user (unique). A user is either not-yet-requested,
+  // in-flight (PENDING/APPROVED), or CONSUMED (already a Dropper).
+  userId      String               @unique @map("user_id")
+  projectNote String               @map("project_note")
+  status      DropperRequestStatus @default(PENDING)
+  // Plaintext single-use code, null until approved. Stored in the clear by
+  // design: the requester must read it in-app (channel C) and the admin sees it
+  // on approve (channel B). Low-value token (grants Dropper, not Admin).
+  code        String?
+  createdAt   DateTime             @default(now()) @map("created_at")
+  approvedAt  DateTime?            @map("approved_at")
+  consumedAt  DateTime?            @map("consumed_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("dropper_requests")
+}

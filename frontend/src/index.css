@@ -1,0 +1,194 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-background text-foreground font-sans antialiased;
+}
+
+/* --- Login flip-card ---
+   Only the parts Tailwind can't express live here: the checkbox-driven
+   sibling combinators, 3D flip transforms, pseudo-element labels, and the
+   slider knob. Everything else is Tailwind utilities in LoginPage.tsx. */
+
+/* Toggle + flip-card share this label so the checkbox combinators reach the card.
+   The 50x20 toggle sits at the top of a centered column; gap pushes the card below. */
+.flip-switch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 50px;
+  width: 50px;
+  height: 20px;
+}
+
+.flip-toggle {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+/* Toggle track — fills the 50x20 `.flip-switch` label box. */
+.flip-slider {
+  box-sizing: border-box;
+  position: absolute;
+  inset: 0;
+  cursor: pointer;
+  border-radius: 5px;
+  border: 2px solid #323232;
+  box-shadow: 4px 4px #323232;
+  background-color: #fff;
+  transition: 0.3s;
+}
+
+/* Toggle knob */
+.flip-slider::before {
+  box-sizing: border-box;
+  position: absolute;
+  content: "";
+  height: 20px;
+  width: 20px;
+  left: -2px;
+  bottom: 2px;
+  border: 2px solid #323232;
+  border-radius: 5px;
+  background-color: #fff;
+  box-shadow: 0 3px 0 #323232;
+  transition: 0.3s;
+}
+
+.flip-toggle:checked + .flip-slider {
+  background-color: #059669;
+}
+
+.flip-toggle:checked + .flip-slider::before {
+  transform: translateX(30px);
+}
+
+/* Side-label anchor: pinned to the top-center of the toggle and taken out of the
+   flex column so it doesn't add a slot or push the card. Labels flank the toggle. */
+.flip-card-side {
+  position: absolute;
+  top: 2px;
+  left: 25px; /* center of the 50px toggle */
+  width: 0;
+  height: 0;
+}
+
+.flip-card-side::before {
+  position: absolute;
+  content: "Connexion";
+  right: 45px; /* gap from the toggle's left edge */
+  top: 0;
+  width: 140px;
+  text-align: right;
+  text-decoration: underline;
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.flip-card-side::after {
+  position: absolute;
+  content: "Inscription";
+  left: 45px; /* gap from the toggle's right edge */
+  top: 0;
+  width: 140px;
+  text-decoration: none;
+  color: #fff;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.flip-toggle:checked ~ .flip-card-side::before {
+  text-decoration: none;
+}
+
+.flip-toggle:checked ~ .flip-card-side::after {
+  text-decoration: underline;
+}
+
+/* 3D flip container + faces. Explicit size + flex:none so the flex parent
+   (`.flip-switch`, only 20px tall) can't collapse it — the faces inside are
+   absolute and contribute no height on their own. */
+.flip-card-inner {
+  flex: none;
+  width: 300px;
+  height: 350px;
+  perspective: 1000px;
+  transform-style: preserve-3d;
+  transition: transform 0.8s;
+}
+
+.flip-toggle:checked ~ .flip-card-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-card-face {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.flip-card-face--back {
+  transform: rotateY(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flip-card-inner {
+    transition: none;
+  }
+}
+
+/* --- Home / landing entrance motion ---
+   Elements start shifted + transparent and settle on load. A single ease-out
+   curve, small stagger via inline --delay. Reduced-motion collapses to an
+   instant, already-visible state (content is never gated on the animation). */
+@keyframes home-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.home-rise {
+  opacity: 0;
+  animation: home-rise 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation-delay: var(--delay, 0ms);
+}
+
+/* Marquee for the numbered-edition ticker strip. */
+@keyframes home-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.home-marquee {
+  animation: home-marquee 22s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-rise {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+  .home-marquee {
+    animation: none;
+  }
+  /* Motion-sensitive users: freeze the hero video on its poster frame instead
+     of an auto-looping background. JS in HomePage pauses it; this hides the
+     playback progress in case autoplay slipped through. */
+  .home-hero-video {
+    display: none;
+  }
+}
