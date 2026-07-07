@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
+import { useToast } from "../components/Toast";
 import { useCountdown } from "../hooks/useCountdown";
 import { getDrop, type UpcomingDrop } from "../services/dropsService";
 import { apiErrorCode } from "../services/httpClient";
@@ -57,6 +58,7 @@ function CdCell({ value, label, accent }: { value: string; label: string; accent
 
 function DetailBody({ drop }: { drop: UpcomingDrop }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const cd = useCountdown(drop.dropAt ? new Date(drop.dropAt).getTime() : Date.now());
 
   // "M'alerter à l'ouverture" subscription state. null = still loading.
@@ -81,8 +83,10 @@ function DetailBody({ drop }: { drop: UpcomingDrop }) {
     try {
       if (next) await subscribeDropAlert(drop.id);
       else await unsubscribeDropAlert(drop.id);
+      toast.success(next ? "Tu seras alerté à l'ouverture." : "Alerte désactivée.");
     } catch {
       setSubscribed(!next); // revert on failure
+      toast.error("Échec. Réessaie.");
     } finally {
       setAlertBusy(false);
     }
@@ -233,7 +237,7 @@ export default function DropDetailPage() {
 
       {error && error !== "product_archived" && error !== "product_paused" && (
         <div className="flex flex-1 items-center justify-center px-5">
-          <div className="rounded-[5px] border-2 border-destructive bg-white p-5 text-center shadow-[4px_4px_0_#DC2626]">
+          <div role="alert" className="rounded-[5px] border-2 border-destructive bg-white p-5 text-center shadow-[4px_4px_0_#DC2626]">
             <p className="text-sm font-bold text-[#0F172A]">
               {error === "product_not_found" ? "Ce drop n'existe pas." : "Impossible de charger le drop."}
             </p>

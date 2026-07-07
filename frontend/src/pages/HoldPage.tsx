@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
+import Spinner from "../components/Spinner";
 import { useHoldTimer } from "../hooks/useHoldTimer";
 import { apiErrorCode } from "../services/httpClient";
 import {
@@ -167,7 +168,13 @@ function ActiveView({ hold, onExpire }: { hold: ActiveHold; onExpire: () => void
           disabled={busy}
           className="h-14 rounded-[5px] border-2 border-[#323232] bg-accent font-sans text-[17px] font-extrabold text-white shadow-[4px_4px_0_#323232] transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-50"
         >
-          {busy ? "Traitement…" : `Payer ${euros(hold.price)} € maintenant`}
+          {busy ? (
+            <span className="inline-flex items-center gap-2">
+              <Spinner /> Traitement…
+            </span>
+          ) : (
+            `Payer ${euros(hold.price)} € maintenant`
+          )}
         </button>
         <button
           type="button"
@@ -213,6 +220,7 @@ export default function HoldPage() {
   const navigate = useNavigate();
   const [hold, setHold] = useState<ActiveHold | null>(null);
   const [expired, setExpired] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
@@ -221,9 +229,13 @@ export default function HoldPage() {
       .then((h) => {
         if (alive) setHold(h);
       })
-      .catch(() => {
-        // 404 no_active_hold (or error): treat as expired/none.
-        if (alive) setExpired(true);
+      .catch((e) => {
+        if (!alive) return;
+        // Only a real 404 (no_active_hold) means the hold is gone → expired view.
+        // Any other failure (network/500) is a genuine error: don't lie to the
+        // user that their reservation expired.
+        if (apiErrorCode(e) === "no_active_hold") setExpired(true);
+        else setLoadError(true);
       })
       .finally(() => {
         if (alive) setLoaded(true);
@@ -241,11 +253,33 @@ export default function HoldPage() {
           <div className="h-10 w-10 animate-spin rounded-full border-4 border-border border-t-accent" />
         </div>
       )}
-      {loaded && !expired && hold && (
+      {loaded && loadError && (
+        <div className="flex flex-1 items-center justify-center px-5">
+          <div
+            role="alert"
+            className="w-full max-w-[420px] rounded-[5px] border-2 border-destructive bg-white p-4 text-center shadow-[4px_4px_0_#DC2626]"
+          >
+            <p className="text-sm font-bold text-[#0F172A]">
+              Impossible de charger ta réservation.
+            </p>
+            <p className="mt-1 text-xs font-semibold text-[#64748B]">
+              Ta réservation n'est pas perdue. Réessaie dans un instant.
+            </p>
+            <button
+              type="button"
+              onClick={() => window.location.reload()}
+              className="mt-4 h-11 rounded-[5px] border-2 border-[#323232] bg-accent px-5 text-sm font-extrabold text-white shadow-[2px_2px_0_#323232] transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+            >
+              Réessayer
+            </button>
+          </div>
+        </div>
+      )}
+      {loaded && !loadError && !expired && hold && (
         <ActiveView hold={hold} onExpire={() => setExpired(true)} />
       )}
-      {loaded && expired && <ExpiredView />}
-      {loaded && !expired && !hold && (
+      {loaded && !loadError && expired && <ExpiredView />}
+      {loaded && !loadError && !expired && !hold && (
         // Loaded, not expired, but no hold — shouldn't happen; bounce to drop.
         <div className="flex flex-1 items-center justify-center px-5">
           <button

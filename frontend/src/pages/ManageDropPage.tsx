@@ -182,11 +182,25 @@ export default function ManageDropPage() {
     return (
       <div className="flex min-h-dvh flex-col bg-background">
         <AppHeader active="create" />
-        <div className="flex flex-1 flex-col items-center justify-center gap-3 px-5 text-center">
-          <h1 className="font-heading text-[22px] font-extrabold text-[#0F172A]">
-            {error === "not_owner" ? "Ce drop n'est pas le tien." : "Drop introuvable."}
-          </h1>
-          <Link to="/my-drops" className="text-sm font-extrabold text-accent">← Mes drops</Link>
+        <div className="flex flex-1 items-center justify-center px-5">
+          <div
+            role="alert"
+            className="w-full max-w-[420px] rounded-[5px] border-2 border-destructive bg-white p-4 text-center shadow-[4px_4px_0_#DC2626]"
+          >
+            <p className="text-sm font-bold text-[#0F172A]">
+              {error === "not_owner"
+                ? "Ce drop n'est pas le tien."
+                : error === "not_found"
+                ? "Drop introuvable."
+                : "Impossible de charger ce drop."}
+            </p>
+            {error !== "not_owner" && error !== "not_found" && (
+              <p className="mt-1 text-xs font-semibold text-[#64748B]">Code : {error}</p>
+            )}
+            <Link to="/my-drops" className="mt-3 inline-block text-sm font-extrabold text-accent">
+              ← Mes drops
+            </Link>
+          </div>
         </div>
       </div>
     );

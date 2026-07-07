@@ -537,6 +537,39 @@ unitRouter.get("/mine", requireAuth, async (req: AuthedRequest, res) => {
   );
 });
 
+// Receipt for one purchased unit (/units/mine/:id). Must belong to the caller
+// and be sold. Enriched with the linked Order when present (Stripe purchases):
+// amountCents = the price actually paid (snapshotted), order id + paidAt. A
+// simulated purchase has no Order, so those fields are null and the receipt
+// falls back to the product price.
+unitRouter.get("/mine/:id", requireAuth, async (req: AuthedRequest, res) => {
+  const unit = await prisma.productUnit.findFirst({
+    where: { id: String(req.params.id), status: "sold", heldByUserId: req.user!.sub },
+    include: { product: { select: { name: true, edition: true, price: true, imageKey: true } } },
+  });
+  if (!unit) {
+    res.status(404).json({ error: "purchase_not_found" });
+    return;
+  }
+  const order = await prisma.order.findUnique({
+    where: { unitId: unit.id },
+    select: { id: true, amountCents: true, status: true, paidAt: true, createdAt: true },
+  });
+  res.json({
+    id: unit.id,
+    serialNumber: unit.serialNumber,
+    soldAt: unit.soldAt,
+    productName: unit.product.name,
+    edition: unit.product.edition,
+    imageUrl: imageUrlFor(unit.product.imageKey),
+    // Paid amount: the Order snapshot when present, else the product price.
+    amountPaid: order?.amountCents ?? unit.product.price,
+    order: order
+      ? { id: order.id, status: order.status, paidAt: order.paidAt, createdAt: order.createdAt }
+      : null,
+  });
+});
+
 // The authed user's active hold (if any): a still-live held unit + its product
 // and deadline. Powers the hold screen without passing state between routes.
 unitRouter.get("/my-hold", requireAuth, async (req: AuthedRequest, res) => {

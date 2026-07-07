@@ -192,3 +192,40 @@ body {
     display: none;
   }
 }
+
+/* --- Micro-interactions (U2) ---
+   Global, low-cost polish applied once here instead of per-component. */
+
+/* Smooth every interactive element's hover/press/focus by default. Buttons and
+   links animate colour, border, box-shadow and transform on a short ease-out —
+   so the neobrutalist hard-shadow shifts feel tactile rather than instant.
+   Components can still override duration/easing with utilities. */
+button,
+a,
+[role="button"],
+[role="switch"],
+select,
+summary {
+  transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Consistent keyboard focus ring (a11y): only on keyboard nav, never on mouse
+   click (focus-visible). Green ring + offset so it reads on any background. */
+:where(button, a, [role="button"], [role="switch"], input, select, textarea, summary):focus-visible {
+  outline: 2px solid #059669;
+  outline-offset: 2px;
+  border-radius: 5px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button,
+  a,
+  [role="button"],
+  [role="switch"],
+  select,
+  summary {
+    transition-duration: 0ms;
+  }
+}

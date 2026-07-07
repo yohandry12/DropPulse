@@ -33,9 +33,11 @@ export async function notify(input: {
     // Fetch the address only when an email is actually requested.
     const user = await prisma.user.findUnique({
       where: { id: input.userId },
-      select: { email: true },
+      select: { email: true, emailNotifications: true },
     });
-    if (user?.email) {
+    // Respect the user's opt-out: in-app notification still persisted above,
+    // but no email when they've disabled them.
+    if (user?.email && user.emailNotifications) {
       await sendMail({
         to: user.email,
         subject: input.title,

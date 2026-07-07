@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
 import { getMyPurchases, type Purchase } from "../services/purchasesService";
 import { apiErrorCode } from "../services/httpClient";
@@ -31,7 +31,9 @@ function fmtDate(iso: string | null): string {
 
 function PurchaseCard({ p }: { p: Purchase }) {
   return (
-    <div className="overflow-hidden rounded-[5px] border-2 border-[#323232] bg-white shadow-[4px_4px_0_#323232]">
+    <Link
+      to={`/purchases/${p.id}`}
+      className="block overflow-hidden rounded-[5px] border-2 border-[#323232] bg-white shadow-[4px_4px_0_#323232] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#323232] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#323232]">
       <div className="flex items-center gap-3.5 border-b-2 border-dashed border-border p-4">
         <div className="relative h-16 w-16 flex-none overflow-hidden rounded-[5px] border-2 border-[#323232]">
           {p.imageUrl ? (
@@ -64,7 +66,7 @@ function PurchaseCard({ p }: { p: Purchase }) {
           {euros(p.price)} €
         </span>
       </div>
-    </div>
+    </Link>
   );
 }
 
@@ -103,7 +105,7 @@ export default function PurchasesPage() {
 
         {/* Error */}
         {error && (
-          <div className="rounded-[5px] border-2 border-destructive bg-white p-4 text-center shadow-[4px_4px_0_#DC2626]">
+          <div role="alert" className="rounded-[5px] border-2 border-destructive bg-white p-4 text-center shadow-[4px_4px_0_#DC2626]">
             <p className="text-sm font-bold text-[#0F172A]">Impossible de charger tes achats.</p>
             <p className="mt-1 text-xs font-semibold text-[#64748B]">Code : {error}</p>
           </div>

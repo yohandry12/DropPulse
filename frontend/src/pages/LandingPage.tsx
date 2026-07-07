@@ -1,7 +1,8 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
 import { useCountdown } from "../hooks/useCountdown";
+import { useToast } from "../components/Toast";
 import { getUpcomingDrops, type UpcomingDrop } from "../services/dropsService";
 import { apiErrorCode } from "../services/httpClient";
 import {
@@ -59,6 +60,7 @@ function CdCell({ value, label, accent }: { value: string; label: string; accent
 // Hero block for the soonest drop — big countdown + CTAs.
 function Hero({ drop }: { drop: UpcomingDrop }) {
   const navigate = useNavigate();
+  const toast = useToast();
   const cd = useCountdown(drop.dropAt ? new Date(drop.dropAt).getTime() : Date.now());
 
   // "M'alerter à l'ouverture" subscription. null = still loading. Only relevant
@@ -84,8 +86,10 @@ function Hero({ drop }: { drop: UpcomingDrop }) {
     try {
       if (next) await subscribeDropAlert(drop.id);
       else await unsubscribeDropAlert(drop.id);
+      toast.success(next ? "Tu seras alerté à l'ouverture." : "Alerte désactivée.");
     } catch {
       setSubscribed(!next); // revert on failure
+      toast.error("Échec. Réessaie.");
     } finally {
       setAlertBusy(false);
     }
@@ -177,7 +181,7 @@ function DropTeaser({ drop }: { drop: UpcomingDrop }) {
   return (
     <Link
       to={`/upcoming/${drop.id}`}
-      className="flex w-[220px] flex-none snap-start flex-col overflow-hidden rounded-[5px] border-2 border-[#323232] bg-white shadow-[4px_4px_0_#323232] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#323232]"
+      className="flex w-[220px] flex-none snap-start flex-col overflow-hidden rounded-[5px] border-2 border-[#323232] bg-white shadow-[4px_4px_0_#323232] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#323232] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#323232]"
     >
       <div className="relative h-[130px]">
         {drop.imageUrl ? (
@@ -203,9 +207,13 @@ function DropTeaser({ drop }: { drop: UpcomingDrop }) {
   );
 }
 
+type SortKey = "date" | "price_asc" | "price_desc";
+
 export default function LandingPage() {
   const [drops, setDrops] = useState<UpcomingDrop[] | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState<SortKey>("date");
 
   useEffect(() => {
     let alive = true;
@@ -224,6 +232,17 @@ export default function LandingPage() {
   const hero = drops?.[0];
   const rest = drops?.slice(1) ?? [];
 
+  // Filter (by name) + sort the "à venir après" list. Client-side: the full
+  // upcoming list is already loaded, so no extra request. Empty query = all.
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    let out = q ? rest.filter((d) => d.name.toLowerCase().includes(q)) : rest;
+    if (sort === "price_asc") out = [...out].sort((a, b) => a.price - b.price);
+    else if (sort === "price_desc") out = [...out].sort((a, b) => b.price - a.price);
+    // "date" keeps the API order (already soonest-first).
+    return out;
+  }, [rest, query, sort]);
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <AppHeader active="upcoming" />
@@ -231,7 +250,7 @@ export default function LandingPage() {
       <div className="flex flex-1 flex-col gap-8 px-5 py-6 md:mx-auto md:w-full md:max-w-[1440px] md:px-16 md:py-14">
         {/* Error */}
         {error && (
-          <div className="rounded-[5px] border-2 border-destructive bg-white p-4 text-center shadow-[4px_4px_0_#DC2626]">
+          <div role="alert" className="rounded-[5px] border-2 border-destructive bg-white p-4 text-center shadow-[4px_4px_0_#DC2626]">
             <p className="text-sm font-bold text-[#0F172A]">Impossible de charger les drops.</p>
             <p className="mt-1 text-xs font-semibold text-[#64748B]">Code : {error}</p>
           </div>
@@ -259,21 +278,53 @@ export default function LandingPage() {
         {hero && <Hero drop={hero} />}
         {rest.length > 0 && (
           <div className="flex flex-col gap-3">
-            <div className="flex items-baseline justify-between">
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
               <div className="text-[11px] font-extrabold tracking-[2px] text-[#64748B]">
                 À VENIR APRÈS
               </div>
               <div className="text-[11px] font-bold tabular-nums text-[#94A3B8]">
-                {rest.length} drop{rest.length > 1 ? "s" : ""} · fais défiler →
+                {filtered.length} drop{filtered.length > 1 ? "s" : ""} · fais défiler →
               </div>
             </div>
+
+            {/* Search + sort — client-side over the already-loaded list. Only
+                worth showing once there are enough drops to bother filtering. */}
+            {rest.length > 3 && (
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  type="search"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                  placeholder="Rechercher un drop…"
+                  aria-label="Rechercher un drop à venir"
+                  className="h-11 flex-1 rounded-[5px] border-2 border-[#323232] bg-white px-3.5 text-[14px] font-semibold text-[#0F172A] shadow-[2px_2px_0_#323232] placeholder:text-[#94A3B8] focus:outline-none"
+                />
+                <select
+                  value={sort}
+                  onChange={(e) => setSort(e.target.value as SortKey)}
+                  aria-label="Trier les drops"
+                  className="h-11 rounded-[5px] border-2 border-[#323232] bg-white px-3 text-[14px] font-bold text-[#0F172A] shadow-[2px_2px_0_#323232] focus:outline-none"
+                >
+                  <option value="date">Plus tôt d'abord</option>
+                  <option value="price_asc">Prix croissant</option>
+                  <option value="price_desc">Prix décroissant</option>
+                </select>
+              </div>
+            )}
+
             {/* Horizontal snap carousel — one row, scrolls sideways, so 3 or 20
                 upcoming drops share the same footprint. */}
-            <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:thin] md:mx-0 md:px-0">
-              {rest.map((d) => (
-                <DropTeaser key={d.id} drop={d} />
-              ))}
-            </div>
+            {filtered.length > 0 ? (
+              <div className="-mx-5 flex snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 [scrollbar-width:thin] md:mx-0 md:px-0">
+                {filtered.map((d) => (
+                  <DropTeaser key={d.id} drop={d} />
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-[5px] border-2 border-dashed border-border bg-white px-4 py-6 text-center text-[13px] font-semibold text-secondary">
+                Aucun drop ne correspond à « {query} ».
+              </p>
+            )}
           </div>
         )}
       </div>

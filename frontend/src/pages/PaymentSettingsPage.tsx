@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
+import Spinner from "../components/Spinner";
 import { apiErrorCode } from "../services/httpClient";
 import {
   getPayoutStatus,
@@ -118,11 +119,15 @@ export default function PaymentSettingsPage() {
               disabled={busy || status === null}
               className="mt-5 h-12 rounded-[5px] border-2 border-[#323232] bg-accent px-6 font-heading text-[15px] font-extrabold text-white shadow-[4px_4px_0_#323232] transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-60"
             >
-              {busy
-                ? "Redirection…"
-                : started
-                ? "Reprendre la configuration"
-                : "Configurer les paiements"}
+              {busy ? (
+                <span className="inline-flex items-center gap-2">
+                  <Spinner /> Redirection…
+                </span>
+              ) : started ? (
+                "Reprendre la configuration"
+              ) : (
+                "Configurer les paiements"
+              )}
             </button>
           )}
 
@@ -138,13 +143,24 @@ export default function PaymentSettingsPage() {
                 disabled={busy}
                 className="mt-5 h-12 rounded-[5px] border-2 border-[#323232] bg-white px-6 font-heading text-[15px] font-extrabold text-[#0F172A] shadow-[4px_4px_0_#323232] transition-transform active:translate-x-[3px] active:translate-y-[3px] active:shadow-none disabled:opacity-60"
               >
-                {busy ? "Redirection…" : "Gérer mon compte de paiement"}
+                {busy ? (
+                  <span className="inline-flex items-center gap-2">
+                    <Spinner /> Redirection…
+                  </span>
+                ) : (
+                  "Gérer mon compte de paiement"
+                )}
               </button>
             </>
           )}
 
           {error && (
-            <p className="mt-4 text-[13px] font-bold text-destructive">{error}</p>
+            <div
+              role="alert"
+              className="mt-4 rounded-[5px] border-2 border-destructive bg-white p-3 shadow-[2px_2px_0_#DC2626]"
+            >
+              <p className="text-[13px] font-bold text-[#0F172A]">{error}</p>
+            </div>
           )}
         </div>
       </main>

@@ -95,7 +95,7 @@ authRouter.get("/me", requireAuth, async (req: AuthedRequest, res) => {
   const [user, purchaseCount] = await Promise.all([
     prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, email: true, name: true, role: true, status: true, createdAt: true },
+      select: { id: true, email: true, name: true, role: true, status: true, createdAt: true, emailNotifications: true },
     }),
     prisma.productUnit.count({ where: { status: "sold", heldByUserId: userId } }),
   ]);
@@ -110,6 +110,21 @@ authRouter.get("/me", requireAuth, async (req: AuthedRequest, res) => {
     role: user.role,
     status: user.status,
     createdAt: user.createdAt,
+    emailNotifications: user.emailNotifications,
     purchaseCount,
   });
+});
+
+// Toggle the caller's email-notification preference. Body: { enabled: boolean }.
+authRouter.patch("/me/email-notifications", requireAuth, async (req: AuthedRequest, res) => {
+  const { enabled } = req.body ?? {};
+  if (typeof enabled !== "boolean") {
+    res.status(400).json({ error: "invalid_value" });
+    return;
+  }
+  await prisma.user.update({
+    where: { id: req.user!.sub },
+    data: { emailNotifications: enabled },
+  });
+  res.json({ emailNotifications: enabled });
 });

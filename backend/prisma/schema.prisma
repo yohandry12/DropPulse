@@ -86,6 +86,10 @@ model User {
   stripeAccountId       String?  @map("stripe_account_id")
   stripeChargesEnabled  Boolean  @default(false) @map("stripe_charges_enabled")
 
+  // Email notification opt-out. true (default) = transactional emails on (payment
+  // confirmed, drop opened). false = in-app notifications only, no email.
+  emailNotifications    Boolean  @default(true) @map("email_notifications")
+
   heldUnits      ProductUnit[]    @relation("HeldBy")
   refreshTokens  RefreshToken[]
   createdDrops   Product[]        @relation("CreatedBy")

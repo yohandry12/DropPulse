@@ -6,6 +6,7 @@ import LandingPage from "./pages/LandingPage";
 import HoldPage from "./pages/HoldPage";
 import ConfirmationPage from "./pages/ConfirmationPage";
 import PurchasesPage from "./pages/PurchasesPage";
+import ReceiptPage from "./pages/ReceiptPage";
 import EmptyStatesPage from "./pages/EmptyStatesPage";
 import ProfilePage from "./pages/ProfilePage";
 import DropDetailPage from "./pages/DropDetailPage";
@@ -105,6 +106,14 @@ export default function App() {
         element={
           <RequireAuth>
             <PurchasesPage />
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/purchases/:id"
+        element={
+          <RequireAuth>
+            <ReceiptPage />
           </RequireAuth>
         }
       />

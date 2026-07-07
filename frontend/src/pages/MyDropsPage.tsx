@@ -67,7 +67,7 @@ function DropCard({ drop }: { drop: MyDrop }) {
   return (
     <Link
       to={`/my-drops/${drop.id}`}
-      className="flex items-center gap-4 rounded-[5px] border-2 border-[#323232] bg-white p-4 shadow-[4px_4px_0_#323232] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#323232]"
+      className="flex items-center gap-4 rounded-[5px] border-2 border-[#323232] bg-white p-4 shadow-[4px_4px_0_#323232] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#323232] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#323232]"
     >
       {/* Thumbnail */}
       <div className="h-16 w-16 flex-none overflow-hidden rounded-[5px] border-2 border-[#323232]">

@@ -11,6 +11,7 @@ export interface UserProfile {
   role: Role;
   status: "ACTIVE" | "DISABLED";
   createdAt: string; // ISO
+  emailNotifications: boolean;
   purchaseCount: number;
 }
 
@@ -18,6 +19,11 @@ export interface UserProfile {
 export async function getProfile(): Promise<UserProfile> {
   const res = await httpClient.get<UserProfile>("/auth/me");
   return res.data;
+}
+
+// Toggle email notifications for the current user.
+export async function setEmailNotifications(enabled: boolean): Promise<void> {
+  await httpClient.patch("/auth/me/email-notifications", { enabled });
 }
 
 // Two-letter avatar initials from an email local-part ("zangoul@…" → "ZA").
