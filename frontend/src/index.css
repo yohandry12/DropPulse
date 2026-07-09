@@ -372,3 +372,25 @@ summary {
     animation: none;
   }
 }
+
+/* Mobile nav menu: panel slides in from the right, backdrop fades in. */
+.lx-menu-panel {
+  animation: lx-menu-in 240ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.lx-menu-backdrop {
+  animation: lx-fade-in 200ms ease-out;
+}
+@keyframes lx-menu-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-menu-panel,
+  .lx-menu-backdrop {
+    animation: none;
+  }
+}

@@ -213,14 +213,19 @@ export default function CreateDropPage() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Platform commission rate, for the net-earnings line in the preview. Seeded
-  // to the default (800 = 8%) so the number is right before the fetch resolves;
-  // corrected from the backend in case the operator changed PLATFORM_FEE_BPS.
+  // Payout state, from a single status fetch. `feeBps` feeds the net-earnings
+  // line (seeded to the 800/8% default so it's right before the fetch resolves).
+  // `payoutReady` null = still loading (show no banner yet, avoid a flash);
+  // false = the dropper can't receive money → warn them before they publish.
   const [feeBps, setFeeBps] = useState(800);
+  const [payoutReady, setPayoutReady] = useState<boolean | null>(null);
   useEffect(() => {
     getPayoutStatus()
-      .then((s) => setFeeBps(s.feeBps))
-      .catch(() => {}); // keep the default on failure — non-blocking
+      .then((s) => {
+        setFeeBps(s.feeBps);
+        setPayoutReady(s.chargesEnabled);
+      })
+      .catch(() => {}); // keep defaults on failure — non-blocking
   }, []);
 
   // Derived numbers for the preview / payload.
@@ -354,6 +359,40 @@ export default function CreateDropPage() {
             </p>
           </div>
         </div>
+
+        {/* Payout warning — the dropper needs an active payment account or the
+            money from their sales won't reach them. Shown right where they're
+            about to create a drop; publishing is still allowed (they can set it
+            up before the drop opens), but the consequence is spelled out. */}
+        {payoutReady === false && (
+          <div className="rounded-[5px] border-2 border-destructive bg-[#FEF2F2] p-4 shadow-[4px_4px_0_#DC2626]">
+            <div className="flex items-start gap-3">
+              <span className="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full bg-destructive text-[14px] font-extrabold text-white">
+                !
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="font-heading text-[15px] font-extrabold text-[#0F172A]">
+                  Tes paiements ne sont pas encore configurés
+                </p>
+                <p className="mt-1 text-[13px] font-semibold leading-relaxed text-[#7F1D1D]">
+                  Tu peux créer et publier un drop, mais tant que ton compte de
+                  paiement n'est pas actif,{" "}
+                  <span className="font-extrabold">
+                    l'argent de tes ventes ne te sera pas reversé
+                  </span>
+                  . Configure-le avant l'ouverture du drop.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => navigate("/settings/payments")}
+                  className="mt-3 h-10 rounded-[5px] border-2 border-[#323232] bg-accent px-4 text-[13px] font-extrabold text-white shadow-[2px_2px_0_#323232] transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none"
+                >
+                  Configurer mes paiements
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {error && (
           <div role="alert" className="rounded-[5px] border-2 border-destructive bg-white p-3.5 shadow-[4px_4px_0_#DC2626]">

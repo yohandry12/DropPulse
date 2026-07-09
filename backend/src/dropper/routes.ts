@@ -180,7 +180,7 @@ dropperRouter.post(
         userId: request.userId,
         type: "DROPPER_APPROVED",
         title: "Ta demande de Dropper est acceptée",
-        body: `Bienvenue ! Voici ton code d'activation à saisir dans l'app : ${code}. Entre-le pour débloquer ton espace Dropper.`,
+        body: `Bienvenue ! Voici ton code d'activation à saisir dans l'app : ${code}. Entre-le pour débloquer ton espace Dropper. Pense ensuite à configurer ton compte de paiement (menu Profil › Paiements) : sans ça, l'argent de tes ventes ne pourra pas t'être reversé.`,
         email: true,
         force: true,
       });

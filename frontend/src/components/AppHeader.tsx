@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
-import { useProfile } from "../hooks/useProfile";
+import { Link, useNavigate } from "react-router-dom";
+import { useProfile, clearProfileCache } from "../hooks/useProfile";
 import { initialsFromEmail } from "../services/userService";
+import { logout } from "../services/authService";
 import HoldFab from "./HoldFab";
 import NotificationBell from "./NotificationBell";
+import MobileMenu from "./MobileMenu";
 import { getPayoutStatus } from "../services/payoutService";
 
 // Shared top nav for the authenticated drop screens. `active` highlights the
@@ -52,6 +54,19 @@ function ProfileMenu({
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // Log out from anywhere without a trip to the profile page: revoke the token,
+  // drop the cached profile, land on /login. Same steps as ProfilePage.onLogout.
+  async function onLogout() {
+    setOpen(false);
+    try {
+      await logout();
+    } finally {
+      clearProfileCache();
+      navigate("/login", { replace: true });
+    }
+  }
 
   // Payout onboarding state (droppers/admins only). true = account not yet able
   // to receive money → surfaces an "urgent" badge to nudge setup.
@@ -162,6 +177,15 @@ function ProfileMenu({
               </Link>
             </>
           )}
+          <div className="my-1 border-t border-border" />
+          <button
+            type="button"
+            role="menuitem"
+            onClick={onLogout}
+            className="block w-full px-4 py-2.5 text-left text-[14px] font-bold text-destructive hover:bg-destructive hover:text-white"
+          >
+            Se déconnecter
+          </button>
         </div>
       )}
     </div>
@@ -223,8 +247,18 @@ export default function AppHeader({
             </span>
           )}
           <NotificationBell />
-          <ProfileMenu
-            initials={initials}
+          {/* Desktop: avatar dropdown. Mobile: burger (holds the nav + account
+              + logout, since the desktop nav is hidden below md). */}
+          <span className="hidden md:block">
+            <ProfileMenu
+              initials={initials}
+              canCreate={canCreate}
+              isAdmin={isAdmin}
+            />
+          </span>
+          <MobileMenu
+            active={active}
+            profile={profile}
             canCreate={canCreate}
             isAdmin={isAdmin}
           />
