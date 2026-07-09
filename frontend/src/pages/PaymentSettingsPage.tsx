@@ -71,6 +71,8 @@ export default function PaymentSettingsPage() {
 
   const active = status?.chargesEnabled === true;
   const started = status?.hasAccount === true;
+  // Commission rate for display. feeBps 800 -> "8". Strips a trailing ".0".
+  const feePct = status ? String(status.feeBps / 100).replace(/\.0$/, "") : null;
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
@@ -163,6 +165,39 @@ export default function PaymentSettingsPage() {
             </div>
           )}
         </div>
+
+        {/* Commission — how the split works, so the dropper knows exactly what
+            they keep on each sale. Rate comes from the backend (feeBps). */}
+        {feePct !== null && (
+          <div className="mt-5 rounded-[5px] border-2 border-[#323232] bg-white p-6 shadow-[4px_4px_0_#323232]">
+            <h2 className="font-heading text-[18px] font-extrabold text-[#0F172A]">
+              Commission
+            </h2>
+            <p className="mt-2 max-w-[54ch] text-[14px] font-semibold text-secondary">
+              Sur chaque vente, DropPulse prélève{" "}
+              <span className="font-extrabold text-[#0F172A]">{feePct}%</span>. Le
+              reste t'est reversé automatiquement sur ton compte Stripe.
+            </p>
+            <div className="mt-4 flex gap-3">
+              <div className="flex-1 rounded-[5px] border-2 border-border bg-background p-3 text-center">
+                <div className="font-mono text-[22px] font-bold tabular-nums text-[#0F172A]">
+                  {feePct}%
+                </div>
+                <div className="mt-0.5 text-[10px] font-extrabold tracking-[1.2px] text-[#64748B]">
+                  COMMISSION
+                </div>
+              </div>
+              <div className="flex-1 rounded-[5px] border-2 border-accent bg-background p-3 text-center">
+                <div className="font-mono text-[22px] font-bold tabular-nums text-accent">
+                  {status ? 100 - status.feeBps / 100 : 0}%
+                </div>
+                <div className="mt-0.5 text-[10px] font-extrabold tracking-[1.2px] text-[#64748B]">
+                  POUR TOI
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

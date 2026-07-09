@@ -49,12 +49,14 @@ enum DropperRequestStatus {
 // In-app notification kind. Drives the icon/label in the bell centre and the
 // email subject. DROP_OPEN: a subscribed upcoming drop just opened. DROP_SOON:
 // reminder before opening. PAYMENT_CONFIRMED: a purchase completed.
-// HOLD_EXPIRING: a held unit is about to be released.
+// HOLD_EXPIRING: a held unit is about to be released. DROPPER_APPROVED: an admin
+// approved the dropper request; the email carries the single-use upgrade code.
 enum NotificationType {
   DROP_OPEN
   DROP_SOON
   PAYMENT_CONFIRMED
   HOLD_EXPIRING
+  DROPPER_APPROVED
 }
 
 // Purchase order lifecycle. PENDING: checkout started, awaiting payment.
@@ -259,6 +261,10 @@ model Order {
   productId       String      @map("product_id")
   unitId          String      @unique @map("unit_id")
   amountCents     Int         @map("amount_cents")
+  // Platform commission kept on this sale, in cents (snapshot at checkout so a
+  // later fee-rate change never rewrites history). 0 when the dropper had no
+  // active Connect account and the platform kept the full amount.
+  feeCents        Int         @default(0) @map("fee_cents")
   status          OrderStatus @default(PENDING)
   stripeSessionId String?     @map("stripe_session_id")
   createdAt       DateTime    @default(now()) @map("created_at")

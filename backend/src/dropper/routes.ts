@@ -2,6 +2,8 @@ import crypto from "crypto";
 import { Router } from "express";
 import { prisma } from "../prisma.js";
 import { requireAuth, requireRole, type AuthedRequest } from "../auth/middleware.js";
+import { notify } from "../notifications/service.js";
+import { log } from "../logger.js";
 
 // Upgrade flow: a Chaser requests to become a Dropper, an Admin approves and a
 // single-use code is issued, the requester enters the code and is promoted.
@@ -168,6 +170,27 @@ dropperRouter.post(
       data: { status: "APPROVED", code, approvedAt: new Date() },
       select: { id: true, status: true, code: true, approvedAt: true },
     });
+
+    // Channel D — email the code to the requester (in addition to in-app C and
+    // the admin-visible B). Best-effort + forced past the email opt-out: this is
+    // a transactional code they asked for, not a marketing message. A notify
+    // failure must never undo the approval, so we swallow it.
+    try {
+      await notify({
+        userId: request.userId,
+        type: "DROPPER_APPROVED",
+        title: "Ta demande de Dropper est acceptée",
+        body: `Bienvenue ! Voici ton code d'activation à saisir dans l'app : ${code}. Entre-le pour débloquer ton espace Dropper.`,
+        email: true,
+        force: true,
+      });
+    } catch (e) {
+      log.error(
+        "notify(DROPPER_APPROVED) failed",
+        e instanceof Error ? e.message : String(e)
+      );
+    }
+
     res.json(updated);
   }
 );

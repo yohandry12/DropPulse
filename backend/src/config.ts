@@ -13,6 +13,12 @@ export const config = {
   refreshTokenTtlDays: Number(process.env.REFRESH_TOKEN_TTL_DAYS ?? 7),
   holdTtlMinutes: Number(process.env.HOLD_TTL_MINUTES ?? 10),
   cronIntervalSeconds: Number(process.env.CRON_INTERVAL_SECONDS ?? 30),
+  // Marketplace commission the platform keeps on each sale, in basis points
+  // (800 = 8%). Applied as a Stripe application_fee on a destination charge:
+  // the platform collects the full price, keeps this cut, transfers the rest to
+  // the dropper's connected account. Only applied when the dropper has an active
+  // Connect account; otherwise the platform keeps 100% (legacy/admin drops).
+  platformFeeBps: Number(process.env.PLATFORM_FEE_BPS ?? 800),
 };
 
 // Transactional email over SMTP (Gmail app-password in dev). Optional: if

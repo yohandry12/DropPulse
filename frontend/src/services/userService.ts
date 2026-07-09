@@ -26,6 +26,25 @@ export async function setEmailNotifications(enabled: boolean): Promise<void> {
   await httpClient.patch("/auth/me/email-notifications", { enabled });
 }
 
+// RGPD Art. 20 — download all of my data as a JSON file (triggers a browser
+// download). The backend sends it as an attachment.
+export async function exportMyData(): Promise<void> {
+  const res = await httpClient.get("/auth/me/export", { responseType: "blob" });
+  const url = URL.createObjectURL(res.data as Blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "droppulse-mes-donnees.json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+
+// RGPD Art. 17 — permanently delete my account and all associated data.
+export async function deleteMyAccount(): Promise<void> {
+  await httpClient.delete("/auth/me");
+}
+
 // Two-letter avatar initials from an email local-part ("zangoul@…" → "ZA").
 export function initialsFromEmail(email: string): string {
   const local = email.split("@")[0] ?? email;

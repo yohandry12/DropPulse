@@ -1,8 +1,9 @@
-import { useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type ChangeEvent, type DragEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
 import { useCountdown } from "../hooks/useCountdown";
 import { apiErrorCode } from "../services/httpClient";
+import { getPayoutStatus } from "../services/payoutService";
 import {
   createDrop,
   publishDrop,
@@ -86,6 +87,7 @@ function Preview({
   dropAtMs,
   holdMinutes,
   imagePreview,
+  feeBps,
 }: {
   name: string;
   edition: string;
@@ -94,6 +96,7 @@ function Preview({
   dropAtMs: number | null;
   holdMinutes: number;
   imagePreview: string | null;
+  feeBps: number;
 }) {
   const cd = useCountdown(dropAtMs ?? Date.now());
   const dateLabel = dropAtMs
@@ -163,9 +166,19 @@ function Preview({
           </span>
         </div>
         <div className="flex justify-between">
-          <span className="text-[#64748B]">Recette max</span>
+          <span className="text-[#64748B]">Recette max (brute)</span>
           <span className="tabular-nums text-[#0F172A]">
             {euros(priceCents * (editionSize || 0))} €
+          </span>
+        </div>
+        {/* Net earnings after the platform commission — so the dropper sets the
+            price knowing what they actually keep. */}
+        <div className="flex justify-between">
+          <span className="text-[#64748B]">
+            Ton gain net (après {String(feeBps / 100).replace(/\.0$/, "")}%)
+          </span>
+          <span className="tabular-nums font-extrabold text-accent">
+            {euros(Math.round(priceCents * (editionSize || 0) * (1 - feeBps / 10000)))} €
           </span>
         </div>
         <div className="flex justify-between">
@@ -199,6 +212,16 @@ export default function CreateDropPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Platform commission rate, for the net-earnings line in the preview. Seeded
+  // to the default (800 = 8%) so the number is right before the fetch resolves;
+  // corrected from the backend in case the operator changed PLATFORM_FEE_BPS.
+  const [feeBps, setFeeBps] = useState(800);
+  useEffect(() => {
+    getPayoutStatus()
+      .then((s) => setFeeBps(s.feeBps))
+      .catch(() => {}); // keep the default on failure — non-blocking
+  }, []);
 
   // Derived numbers for the preview / payload.
   const priceCents = useMemo(() => {
@@ -349,6 +372,7 @@ export default function CreateDropPage() {
               dropAtMs={dropAtMs}
               holdMinutes={holdMinutes}
               imagePreview={imagePreview}
+              feeBps={feeBps}
             />
           </div>
 

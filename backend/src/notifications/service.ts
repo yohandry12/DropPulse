@@ -11,6 +11,11 @@ import { emailShell, sendMail } from "./mailer.js";
 // email: when true, also email the user (the same title/body). Only high-value
 // events set this (payment confirmed, drop opened) — see callers. The email is
 // best-effort (sendMail swallows failures); a bad SMTP never fails the action.
+//
+// force: when true, send the email even if the user opted out of notifications.
+// Reserve for transactional messages the user needs regardless of preference
+// (e.g. the dropper upgrade code) — the opt-out covers marketing-ish events, not
+// a code they explicitly requested and are waiting on.
 export async function notify(input: {
   userId: string;
   type: NotificationType;
@@ -18,6 +23,7 @@ export async function notify(input: {
   body: string;
   productId?: string | null;
   email?: boolean;
+  force?: boolean;
 }): Promise<void> {
   await prisma.notification.create({
     data: {
@@ -36,8 +42,8 @@ export async function notify(input: {
       select: { email: true, emailNotifications: true },
     });
     // Respect the user's opt-out: in-app notification still persisted above,
-    // but no email when they've disabled them.
-    if (user?.email && user.emailNotifications) {
+    // but no email when they've disabled them — unless `force` (transactional).
+    if (user?.email && (user.emailNotifications || input.force)) {
       await sendMail({
         to: user.email,
         subject: input.title,

@@ -278,6 +278,29 @@ export default function LoginPage() {
                   <button className={BTN_CLASS} type="submit" disabled={busy}>
                     {busy ? "…" : "Confirmer !"}
                   </button>
+                  {/* RGPD Art. 13 — inform at the point of collection. Creating
+                      an account is the consent act; links to the terms + privacy. */}
+                  <p className="max-w-[280px] text-center text-[11px] font-semibold leading-relaxed text-[#475569]">
+                    En créant un compte, tu acceptes nos{" "}
+                    <a
+                      href="/cgu"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-accent hover:underline"
+                    >
+                      Conditions générales
+                    </a>{" "}
+                    et notre{" "}
+                    <a
+                      href="/confidentialite"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="font-bold text-accent hover:underline"
+                    >
+                      Politique de confidentialité
+                    </a>
+                    .
+                  </p>
                 </form>
               </div>
             </div>

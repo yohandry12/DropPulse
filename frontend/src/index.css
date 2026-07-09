@@ -6,6 +6,59 @@ body {
   @apply bg-background text-foreground font-sans antialiased;
 }
 
+/* Long-form legal pages: readable prose defaults scoped to .legal-prose. */
+.legal-prose {
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.7;
+}
+.legal-prose h2 {
+  font-family: Rubik, system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.25;
+  color: #0f172a;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+}
+.legal-prose h3 {
+  font-family: Rubik, system-ui, sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: #0f172a;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+.legal-prose p {
+  margin-bottom: 1rem;
+}
+.legal-prose ul {
+  margin: 0 0 1rem 1.25rem;
+  list-style: disc;
+}
+.legal-prose li {
+  margin-bottom: 0.4rem;
+}
+.legal-prose a {
+  color: #059669;
+  font-weight: 700;
+  text-decoration: underline;
+}
+.legal-prose strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+/* Placeholder tokens the site owner must fill in before going live. */
+.legal-prose .todo {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 4px;
+  padding: 0 6px;
+  font-weight: 700;
+  color: #92400e;
+  font-size: 13px;
+}
+
 /* --- Login flip-card ---
    Only the parts Tailwind can't express live here: the checkbox-driven
    sibling combinators, 3D flip transforms, pseudo-element labels, and the
@@ -176,6 +229,30 @@ body {
   animation: home-marquee 22s linear infinite;
 }
 
+/* --- Cinematic landing (v2) — GSAP-driven scroll scenes ---
+   IMPORTANT: reveals default to VISIBLE. GSAP animates them with gsap.from()
+   (hidden → visible), so if JS is off, ScrollTrigger never fires, the tab is
+   backgrounded, or a crawler renders the page, the content is still shown.
+   Never gate content visibility on a class-triggered transition. */
+.lx-reveal {
+  will-change: transform, opacity;
+}
+.lx-reveal-x {
+  will-change: transform, opacity;
+}
+/* Marquee ticker for the numbered-edition strip (v2). */
+.lx-ticker {
+  animation: home-marquee 30s linear infinite;
+}
+/* Subtle glowing pulse for the "live" accent dot. */
+@keyframes lx-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.82); }
+}
+.lx-pulse {
+  animation: lx-pulse 1.4s ease-in-out infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .home-rise {
     opacity: 1;
@@ -185,11 +262,46 @@ body {
   .home-marquee {
     animation: none;
   }
+  /* v2 cinematic: collapse all reveals to their visible resting state. */
+  .lx-reveal,
+  .lx-reveal-x {
+    opacity: 1 !important;
+    transform: none !important;
+  }
+  .lx-ticker,
+  .lx-pulse {
+    animation: none;
+  }
   /* Motion-sensitive users: freeze the hero video on its poster frame instead
      of an auto-looping background. JS in HomePage pauses it; this hides the
      playback progress in case autoplay slipped through. */
   .home-hero-video {
     display: none;
+  }
+}
+
+/* --- Page transitions (U1) ---
+   Cross-fade between routes via the native View Transitions API (triggered by
+   React Router's `viewTransition` prop). Zero JS, zero dependency. Browsers
+   without support simply navigate instantly — no breakage. */
+@keyframes vt-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes vt-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+::view-transition-old(root) {
+  animation: vt-fade-out 160ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+::view-transition-new(root) {
+  animation: vt-fade-in 200ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
   }
 }
 
@@ -227,5 +339,36 @@ summary {
   select,
   summary {
     transition-duration: 0ms;
+  }
+}
+
+/* Drop-switcher bottom sheet: slide up from the bottom, backdrop fades in.
+   ease-out-quart for a natural settle. Reduced-motion shows it instantly. */
+.lx-sheet {
+  animation: lx-sheet-up 260ms cubic-bezier(0.25, 1, 0.5, 1);
+}
+.lx-sheet-backdrop {
+  animation: lx-fade-in 200ms ease-out;
+}
+@keyframes lx-sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+@keyframes lx-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lx-sheet,
+  .lx-sheet-backdrop {
+    animation: none;
   }
 }

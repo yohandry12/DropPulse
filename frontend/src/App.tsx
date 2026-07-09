@@ -1,6 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import LoginPage from "./pages/LoginPage";
 import HomePage from "./pages/HomePage";
+import PrivacyPage from "./pages/legal/PrivacyPage";
+import LegalNoticePage from "./pages/legal/LegalNoticePage";
+import TermsPage from "./pages/legal/TermsPage";
+import CookiesPage from "./pages/legal/CookiesPage";
+import CookieNotice from "./components/CookieNotice";
 import DropPage from "./pages/DropPage";
 import LandingPage from "./pages/LandingPage";
 import HoldPage from "./pages/HoldPage";
@@ -48,10 +53,16 @@ function RequireAdmin({ children }: { children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
       {/* Public landing / home — no auth gate. Adapts to the visitor's auth. */}
       <Route path="/" element={<HomePage />} />
+      {/* Public legal pages (RGPD). */}
+      <Route path="/confidentialite" element={<PrivacyPage />} />
+      <Route path="/mentions-legales" element={<LegalNoticePage />} />
+      <Route path="/cgu" element={<TermsPage />} />
+      <Route path="/cookies" element={<CookiesPage />} />
       <Route
         path="/drop"
         element={
@@ -231,6 +242,8 @@ export default function App() {
           </RequireAuth>
         }
       />
-    </Routes>
+      </Routes>
+      <CookieNotice />
+    </>
   );
 }

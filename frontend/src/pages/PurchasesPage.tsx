@@ -33,6 +33,7 @@ function PurchaseCard({ p }: { p: Purchase }) {
   return (
     <Link
       to={`/purchases/${p.id}`}
+      viewTransition
       className="block overflow-hidden rounded-[5px] border-2 border-[#323232] bg-white shadow-[4px_4px_0_#323232] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#323232] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#323232]">
       <div className="flex items-center gap-3.5 border-b-2 border-dashed border-border p-4">
         <div className="relative h-16 w-16 flex-none overflow-hidden rounded-[5px] border-2 border-[#323232]">

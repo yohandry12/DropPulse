@@ -1,12 +1,12 @@
-# FlashDrop — Design Brief
+# DropPulse — Design Brief
 
 > À coller dans Claude (design) pour générer les écrans. Décrit ce qu'est le produit, qui l'utilise, l'ambiance visuelle et les écrans à concevoir.
 
 ---
 
-## Ce qu'est FlashDrop
+## Ce qu'est DropPulse
 
-FlashDrop est une plateforme e-commerce de **ventes flash à stock limité** — le pattern "drop" de sneakers. Un produit sort à une heure précise, en **quantité très limitée** avec des **unités individuellement numérotées** (ex : paire #001/100). Des centaines d'acheteurs se ruent en même temps sur un stock rare : c'est une course.
+DropPulse est une plateforme e-commerce de **ventes flash à stock limité** — le pattern "drop" de sneakers. Un produit sort à une heure précise, en **quantité très limitée** avec des **unités individuellement numérotées** (ex : paire #001/100). Des centaines d'acheteurs se ruent en même temps sur un stock rare : c'est une course.
 
 Le cœur du produit n'est pas le catalogue, c'est **le moment du drop** : tension, rareté, urgence, "premier arrivé premier servi". Quand un utilisateur clique pour acheter une unité, elle est **réservée temporairement pour lui** (un hold de quelques minutes) le temps de payer ; s'il ne confirme pas, elle repart en stock pour quelqu'un d'autre.
 
@@ -17,6 +17,7 @@ C'est un **projet portfolio** (démonstration technique) — l'accent est mis su
 ## États d'une unité (central pour l'UI)
 
 Chaque unité numérotée vit dans un de ces états, à refléter visuellement :
+
 - **Disponible** — achetable, c'est la cible
 - **Réservée (hold)** — quelqu'un est en train de l'acheter ; compte à rebours ; indisponible pour les autres
 - **Vendue** — définitivement partie
@@ -36,6 +37,7 @@ L'utilisateur ne peut tenir **qu'une seule réservation à la fois**. L'UI doit 
 ## Ambiance visuelle (déjà amorcée)
 
 Direction déjà posée sur l'écran de connexion, à prolonger :
+
 - **Style :** flat design moderne, épuré, épuré mais avec une **touche hype/urgence**
 - **Couleurs :** base ardoise (slate `#334155` / `#475569`), fond clair (`#F8FAFC`), accent **vert "stock" `#059669`** (call-to-action, dispo), rouge `#DC2626` pour rupture/erreur
 - **Typo :** Rubik (titres) + Nunito Sans (corps)

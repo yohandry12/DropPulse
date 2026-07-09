@@ -128,3 +128,55 @@ authRouter.patch("/me/email-notifications", requireAuth, async (req: AuthedReque
   });
   res.json({ emailNotifications: enabled });
 });
+
+// RGPD Art. 20 — data portability. Returns all of the caller's personal data in
+// a machine-readable JSON, sent as a download. Excludes secrets (password hash,
+// tokens). Purchases + notifications are the user's own records.
+authRouter.get("/me/export", requireAuth, async (req: AuthedRequest, res) => {
+  const userId = req.user!.sub;
+  const [user, purchases, notifications] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true, email: true, name: true, role: true, status: true,
+        emailNotifications: true, createdAt: true,
+      },
+    }),
+    prisma.productUnit.findMany({
+      where: { status: "sold", heldByUserId: userId },
+      select: { serialNumber: true, soldAt: true, product: { select: { name: true, price: true } } },
+    }),
+    prisma.notification.findMany({
+      where: { userId },
+      select: { type: true, title: true, body: true, createdAt: true, readAt: true },
+      orderBy: { createdAt: "desc" },
+    }),
+  ]);
+  if (!user) {
+    res.status(404).json({ error: "user_not_found" });
+    return;
+  }
+  const payload = {
+    exportedAt: new Date().toISOString(),
+    account: user,
+    purchases: purchases.map((p) => ({
+      serialNumber: p.serialNumber,
+      soldAt: p.soldAt,
+      productName: p.product.name,
+      priceCents: p.product.price,
+    })),
+    notifications,
+  };
+  res.setHeader("Content-Type", "application/json");
+  res.setHeader("Content-Disposition", 'attachment; filename="droppulse-mes-donnees.json"');
+  res.send(JSON.stringify(payload, null, 2));
+});
+
+// RGPD Art. 17 — right to erasure. Deletes the caller's account; related rows
+// (refresh tokens, notifications, alerts, orders, dropper request) cascade via
+// the schema's onDelete: Cascade. Sold units are anonymised (heldByUserId set
+// null via onDelete: SetNull) so drop sales history survives without the person.
+authRouter.delete("/me", requireAuth, async (req: AuthedRequest, res) => {
+  await prisma.user.delete({ where: { id: req.user!.sub } });
+  res.json({ deleted: true });
+});

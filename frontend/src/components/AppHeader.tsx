@@ -202,6 +202,7 @@ export default function AppHeader({
                 <Link
                   key={item.key}
                   to={item.to}
+                  viewTransition
                   className="text-[15px] font-semibold text-[#64748B] hover:text-[#0F172A]"
                 >
                   {item.label}

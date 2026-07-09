@@ -11,6 +11,7 @@ import {
   refreshPayoutStatus,
 } from "./connect.js";
 import { mailConfig } from "../config.js";
+import { computePlatformFee } from "./fee.js";
 
 export const paymentRouter = Router();
 
@@ -117,7 +118,17 @@ paymentRouter.post(
         expiresAt: true,
         serialNumber: true,
         productId: true,
-        product: { select: { name: true, price: true } },
+        product: {
+          select: {
+            name: true,
+            price: true,
+            // The dropper (drop creator). We route the payout to their Connect
+            // account and keep the platform fee. Null for legacy/admin drops.
+            createdBy: {
+              select: { stripeAccountId: true, stripeChargesEnabled: true },
+            },
+          },
+        },
       },
     });
     if (!unit) {
@@ -134,6 +145,14 @@ paymentRouter.post(
     }
 
     const serial = `#${unit.serialNumber.split("-").pop()}`;
+
+    // Marketplace split (destination charge). When the dropper has an active
+    // Connect account we collect the full price, keep `feeCents`, and transfer
+    // the rest to them. Otherwise (legacy/admin drops, or dropper not onboarded)
+    // the platform keeps 100% — the sale is never blocked.
+    const dropper = unit.product.createdBy;
+    const canPayout = !!dropper?.stripeAccountId && dropper.stripeChargesEnabled;
+    const feeCents = computePlatformFee(unit.product.price, canPayout);
 
     try {
       const session = await stripe.checkout.sessions.create({
@@ -153,6 +172,12 @@ paymentRouter.post(
         // metadata lets the webhook map the session back to the unit+buyer
         // without a DB lookup on the session id alone.
         metadata: { unitId: unit.id, userId },
+        ...(canPayout && {
+          payment_intent_data: {
+            application_fee_amount: feeCents,
+            transfer_data: { destination: dropper!.stripeAccountId! },
+          },
+        }),
         success_url: `${mailConfig.appUrl}/purchases?paid=1`,
         cancel_url: `${mailConfig.appUrl}/hold?canceled=1`,
       });
@@ -165,6 +190,7 @@ paymentRouter.post(
           productId: unit.productId,
           unitId: unit.id,
           amountCents: unit.product.price,
+          feeCents,
           status: "PENDING",
           stripeSessionId: session.id,
         },
@@ -173,6 +199,7 @@ paymentRouter.post(
           stripeSessionId: session.id,
           status: "PENDING",
           amountCents: unit.product.price,
+          feeCents,
         },
       });
 

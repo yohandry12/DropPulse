@@ -2,9 +2,16 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
 import { useProfile, clearProfileCache } from "../hooks/useProfile";
-import { initialsFromEmail, setEmailNotifications } from "../services/userService";
+import {
+  deleteMyAccount,
+  exportMyData,
+  initialsFromEmail,
+  setEmailNotifications,
+} from "../services/userService";
 import { logout } from "../services/authService";
+import { clearTokens } from "../services/tokenStorage";
 import { useToast } from "../components/Toast";
+import Spinner from "../components/Spinner";
 
 // "Mon profil" screen: shows the authed user's email, join date, purchase
 // count (GET /auth/me), plus logout. Light neobrutalist palette.
@@ -60,6 +67,38 @@ export default function ProfilePage() {
     } finally {
       clearProfileCache();
       navigate("/login", { replace: true });
+    }
+  }
+
+  // RGPD data export (Art. 20).
+  const [exporting, setExporting] = useState(false);
+  async function onExport() {
+    if (exporting) return;
+    setExporting(true);
+    try {
+      await exportMyData();
+      toast.success("Tes données ont été téléchargées.");
+    } catch {
+      toast.error("Échec du téléchargement. Réessaie.");
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  // RGPD account deletion (Art. 17). Two-step confirm — irreversible.
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  async function onDelete() {
+    if (deleting) return;
+    setDeleting(true);
+    try {
+      await deleteMyAccount();
+      clearTokens();
+      clearProfileCache();
+      navigate("/login", { replace: true });
+    } catch {
+      toast.error("La suppression a échoué. Réessaie.");
+      setDeleting(false);
     }
   }
 
@@ -139,8 +178,61 @@ export default function ProfilePage() {
               </button>
             </div>
 
+            {/* Mes données (RGPD) */}
+            <div className="rounded-[5px] border-2 border-[#323232] bg-white p-4 shadow-[4px_4px_0_#323232]">
+              <div className="font-heading text-[15px] font-bold text-[#0F172A]">
+                Mes données
+              </div>
+              <p className="mt-0.5 text-[12px] font-semibold text-secondary">
+                Télécharge une copie de tes données, ou supprime définitivement ton compte.
+              </p>
+              <button
+                type="button"
+                onClick={onExport}
+                disabled={exporting}
+                className="mt-3 flex h-11 w-full items-center justify-center gap-2 rounded-[5px] border-2 border-[#323232] bg-white text-[14px] font-extrabold text-[#0F172A] shadow-[2px_2px_0_#323232] transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-60"
+              >
+                {exporting ? <><Spinner /> Préparation…</> : "Télécharger mes données"}
+              </button>
+
+              {!confirmDelete ? (
+                <button
+                  type="button"
+                  onClick={() => setConfirmDelete(true)}
+                  className="mt-2.5 h-11 w-full rounded-[5px] text-[13px] font-extrabold text-destructive transition-colors hover:underline"
+                >
+                  Supprimer mon compte
+                </button>
+              ) : (
+                <div className="mt-3 rounded-[5px] border-2 border-destructive bg-[#FEF2F2] p-3">
+                  <p className="text-[13px] font-bold text-[#0F172A]">
+                    Cette action est irréversible. Tout ton compte et tes données seront
+                    définitivement supprimés.
+                  </p>
+                  <div className="mt-3 flex gap-2.5">
+                    <button
+                      type="button"
+                      onClick={onDelete}
+                      disabled={deleting}
+                      className="flex h-10 flex-1 items-center justify-center gap-2 rounded-[5px] border-2 border-[#323232] bg-destructive text-[13px] font-extrabold text-white shadow-[2px_2px_0_#323232] transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-60"
+                    >
+                      {deleting ? <><Spinner /> Suppression…</> : "Oui, supprimer"}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setConfirmDelete(false)}
+                      disabled={deleting}
+                      className="h-10 flex-1 rounded-[5px] border-2 border-[#323232] bg-white text-[13px] font-extrabold text-[#0F172A] shadow-[2px_2px_0_#323232] transition-transform active:translate-x-[1px] active:translate-y-[1px] active:shadow-none disabled:opacity-60"
+                    >
+                      Annuler
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
             {/* Actions */}
-            <div className="mt-auto flex flex-col gap-2.5">
+            <div className="flex flex-col gap-2.5">
               <button
                 type="button"
                 onClick={() => navigate("/purchases")}

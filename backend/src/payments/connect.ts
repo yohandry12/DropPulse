@@ -1,6 +1,6 @@
 import { prisma } from "../prisma.js";
 import { getStripe } from "./stripe.js";
-import { mailConfig } from "../config.js";
+import { config, mailConfig } from "../config.js";
 
 // Stripe Connect onboarding for droppers. We create an Express connected
 // account (Stripe hosts the bank-details form), store only its id, and mirror
@@ -9,6 +9,9 @@ import { mailConfig } from "../config.js";
 export type PayoutStatus = {
   hasAccount: boolean;
   chargesEnabled: boolean;
+  // Platform commission in basis points (800 = 8%), so the dropper UI can show
+  // the real rate and their net earnings without hardcoding it in the frontend.
+  feeBps: number;
 };
 
 // Read the caller's current payout status from our DB (cheap, no Stripe call).
@@ -20,6 +23,7 @@ export async function getPayoutStatus(userId: string): Promise<PayoutStatus> {
   return {
     hasAccount: !!user?.stripeAccountId,
     chargesEnabled: user?.stripeChargesEnabled ?? false,
+    feeBps: config.platformFeeBps,
   };
 }
 
@@ -91,6 +95,7 @@ export async function refreshPayoutStatus(userId: string): Promise<PayoutStatus>
     return {
       hasAccount: !!user?.stripeAccountId,
       chargesEnabled: user?.stripeChargesEnabled ?? false,
+      feeBps: config.platformFeeBps,
     };
   }
 
@@ -102,5 +107,5 @@ export async function refreshPayoutStatus(userId: string): Promise<PayoutStatus>
       data: { stripeChargesEnabled: chargesEnabled },
     });
   }
-  return { hasAccount: true, chargesEnabled };
+  return { hasAccount: true, chargesEnabled, feeBps: config.platformFeeBps };
 }

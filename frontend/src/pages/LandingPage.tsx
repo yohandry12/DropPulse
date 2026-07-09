@@ -181,6 +181,7 @@ function DropTeaser({ drop }: { drop: UpcomingDrop }) {
   return (
     <Link
       to={`/upcoming/${drop.id}`}
+      viewTransition
       className="flex w-[220px] flex-none snap-start flex-col overflow-hidden rounded-[5px] border-2 border-[#323232] bg-white shadow-[4px_4px_0_#323232] transition-transform hover:-translate-x-px hover:-translate-y-px hover:shadow-[5px_5px_0_#323232] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[1px_1px_0_#323232]"
     >
       <div className="relative h-[130px]">

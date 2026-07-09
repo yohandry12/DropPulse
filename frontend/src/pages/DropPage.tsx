@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import AppHeader from "../components/AppHeader";
+import DropSwitcher from "../components/DropSwitcher";
 import { apiErrorCode } from "../services/httpClient";
 import {
   getLiveDrops,
@@ -146,8 +147,15 @@ export default function DropPage() {
   const [holdError, setHoldError] = useState<string | null>(null);
   const [holding, setHolding] = useState(false);
 
-  // The drop to show: the route id if given, else the most recent live drop.
-  const selectedId = routeId ?? liveDrops?.[0]?.id ?? null;
+  // The drop to show: the route id if it still points at a live drop, else the
+  // most recent live drop. Guarding against a dead routeId (a drop that closed
+  // since the link was shared) avoids a 404 that would strand the user on an
+  // error screen instead of falling back to what's actually live.
+  const selectedId = useMemo(() => {
+    if (liveDrops === null) return routeId ?? null; // list not loaded yet
+    if (routeId && liveDrops.some((d) => d.id === routeId)) return routeId;
+    return liveDrops[0]?.id ?? null;
+  }, [routeId, liveDrops]);
 
   // 1. Load the list of live drops once.
   useEffect(() => {
@@ -254,39 +262,14 @@ export default function DropPage() {
     <div className="flex min-h-dvh flex-col bg-background">
       <AppHeader active="drop" live />
 
-      {/* Live-drop switcher — only when several drops are live at once. A
-          horizontally scrollable row of chips: each shows the drop name + a live
-          "X dispo" pill, the active one highlighted. Clicking routes to /drop/:id. */}
-      {liveDrops && liveDrops.length > 1 && (
-        <div className="border-b-2 border-border bg-white">
-          <div className="mx-auto flex w-full max-w-[1440px] gap-2 overflow-x-auto px-4 py-2.5 md:px-8">
-            {liveDrops.map((d) => {
-              const active = d.id === selectedId;
-              return (
-                <button
-                  key={d.id}
-                  type="button"
-                  onClick={() => navigate(`/drop/${d.id}`)}
-                  aria-current={active ? "true" : undefined}
-                  className={`flex flex-none items-center gap-2 rounded-[5px] border-2 border-[#323232] px-3 py-1.5 text-[13px] font-bold transition-transform active:translate-x-[1px] active:translate-y-[1px] ${
-                    active
-                      ? "bg-[#0F172A] text-white shadow-none"
-                      : "bg-white text-[#334155] shadow-[2px_2px_0_#323232]"
-                  }`}
-                >
-                  <span className="max-w-[160px] truncate">{d.name}</span>
-                  <span
-                    className={`flex-none rounded-[5px] px-1.5 py-0.5 text-[11px] font-extrabold tabular-nums ${
-                      active ? "bg-white/15 text-white" : "bg-muted text-accent"
-                    }`}
-                  >
-                    {d.availableCount} dispo
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+      {/* Live-drop switcher — chip row for a handful of drops, searchable bottom
+          sheet once there are too many to scan. See DropSwitcher. */}
+      {liveDrops && (
+        <DropSwitcher
+          drops={liveDrops}
+          selectedId={selectedId}
+          onSelect={(id) => navigate(`/drop/${id}`)}
+        />
       )}
 
       {/* ---- Desktop: 2-column (aside + grid) / Mobile: stacked ---- */}

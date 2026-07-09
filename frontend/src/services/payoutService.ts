@@ -5,6 +5,7 @@ import { httpClient } from "./httpClient";
 export interface PayoutStatus {
   hasAccount: boolean;
   chargesEnabled: boolean;
+  feeBps: number; // platform commission in basis points (800 = 8%)
 }
 
 export async function getPayoutStatus(): Promise<PayoutStatus> {
