@@ -1,0 +1,100 @@
+rules:
+  # ── Prisma: raw SQL must stay parameterised ──────────────────────────────
+  # $queryRawUnsafe / $executeRawUnsafe take a plain string, so any interpolation
+  # or concatenation into that string is an injection vector. The safe path is
+  # the tagged-template $queryRaw`...` (already used in units/service.ts) or
+  # passing values as positional params. See the prisma-queryraw note.
+  - id: droppulse-prisma-raw-unsafe-interpolation
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: "$queryRawUnsafe/$executeRawUnsafe with an interpolated or concatenated string is SQL-injectable. Use the tagged-template $queryRaw backtick form (values become bound params), or pass values as positional arguments."
+    patterns:
+      # The unsafe raw APIs take a plain string; a template with ${} or a
+      # concatenation means untrusted data is being spliced into SQL text.
+      - pattern-regex: \.\$(queryRawUnsafe|executeRawUnsafe)\s*\(\s*(`[^`]*\$\{|['"][^'"]*['"]\s*\+|[A-Za-z_$][\w$]*\s*\+)
+    metadata:
+      cwe: ["CWE-89"]
+      owasp: ["A03:2021"]
+      category: security
+
+  # ── Stripe webhook must read the raw body ────────────────────────────────
+  # The webhook verifies Stripe's signature against the RAW request bytes. A
+  # route that JSON-parses the body (express.json / bodyParser.json) inline
+  # breaks signature verification. The webhook route must use express.raw().
+  - id: droppulse-stripe-webhook-json-body
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: "A webhook route parses JSON inline; Stripe signature verification needs the RAW body. Mount it with express.raw and keep it BEFORE the global express.json()."
+    patterns:
+      - pattern-either:
+          - pattern: $R.post("=~/.*[Ww]ebhook.*/", express.json(...), ...)
+          - pattern: $R.post("=~/.*[Ww]ebhook.*/", bodyParser.json(...), ...)
+    metadata:
+      cwe: ["CWE-345"]
+      category: security
+
+  # ── No hardcoded secrets ─────────────────────────────────────────────────
+  # Secrets must come from process.env, never a string literal in tracked code.
+  - id: droppulse-hardcoded-secret
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: "Hardcoded secret in source. Read it from process.env and keep the value in the gitignored .env, never in tracked code."
+    patterns:
+      - pattern-either:
+          - pattern: $VAR = "$VAL"
+          - pattern: $VAR = '$VAL'
+      # Name looks like a credential…
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i).*(secret|passwd|password|private_key)$
+      # …and the value looks like an actual secret, not a config identifier.
+      # Excludes storage-key names ("flashdrop.access"), empty, and placeholders.
+      - metavariable-regex:
+          metavariable: $VAL
+          regex: ^(?!$)(?!changeme$)(?!placeholder$)(?!.*\.[a-z]).{6,}$
+    metadata:
+      cwe: ["CWE-798"]
+      category: security
+
+  - id: droppulse-stripe-key-literal
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: "A Stripe key or webhook-secret literal is present in source. These must only ever live in the gitignored .env, loaded via process.env."
+    pattern-regex: \b(sk_live_|sk_test_|whsec_|pk_live_)[A-Za-z0-9]{6,}
+    metadata:
+      cwe: ["CWE-798"]
+      category: security
+
+  # ── JWT must be verified ─────────────────────────────────────────────────
+  # Verifying with the "none" algorithm, or ignoring expiration, defeats the
+  # point of signing and lets an attacker forge identities.
+  - id: droppulse-jwt-none-algorithm
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: "JWT verified with the none algorithm allows token forgery. Pin a real algorithm, e.g. algorithms set to HS256."
+    pattern: '$J.verify(..., {algorithms: ["none"], ...})'
+    metadata:
+      cwe: ["CWE-347"]
+      owasp: ["A02:2021"]
+      category: security
+
+  - id: droppulse-jwt-ignore-expiration
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: "JWT verified with ignoreExpiration true accepts expired tokens. Remove it unless there is a deliberate, documented reason."
+    pattern: '$J.verify(..., {..., ignoreExpiration: true, ...})'
+    metadata:
+      cwe: ["CWE-613"]
+      category: security
+
+  # ── React: no unsanitised HTML injection ─────────────────────────────────
+  # dangerouslySetInnerHTML is an XSS sink; DropPulse renders through JSX.
+  - id: droppulse-react-dangerous-html
+    languages: [typescript, javascript]
+    severity: WARNING
+    message: "dangerouslySetInnerHTML injects raw HTML (XSS risk). Render through JSX; if raw HTML is unavoidable, sanitise it first."
+    pattern: <$EL dangerouslySetInnerHTML={...} />
+    metadata:
+      cwe: ["CWE-79"]
+      owasp: ["A03:2021"]
+      category: security

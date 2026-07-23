@@ -1,0 +1,50 @@
+name: Semgrep SAST
+
+# Static analysis on every PR and on pushes to main. Blocks the build when an
+# ERROR-severity finding appears (custom DropPulse rules + core registry packs).
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref to save minutes.
+concurrency:
+  group: semgrep-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    name: Scan
+    runs-on: ubuntu-latest
+    # Skip on Dependabot PRs (no secrets, and they touch lockfiles only).
+    if: github.actor != 'dependabot[bot]'
+    container:
+      image: semgrep/semgrep
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # Custom DropPulse rules — these are the project-specific invariants
+      # (Prisma raw SQL, Stripe webhook raw body, hardcoded secrets, JWT).
+      # ERROR findings here fail the job.
+      - name: Semgrep — custom rules (blocking)
+        run: semgrep scan --config .semgrep/ --error --severity ERROR backend/src frontend/src
+
+      # Registry security packs — broader coverage, reported but non-blocking so
+      # a noisy upstream rule can't wedge the pipeline. Findings show in the logs
+      # and (when enabled) as SARIF in the Security tab.
+      - name: Semgrep — registry packs (report only)
+        run: |
+          semgrep scan \
+            --config p/typescript --config p/react --config p/nodejs \
+            --config p/jwt --config p/secrets \
+            --sarif --output semgrep.sarif \
+            backend/src frontend/src || true
+
+      - name: Upload SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: semgrep.sarif
+        continue-on-error: true
